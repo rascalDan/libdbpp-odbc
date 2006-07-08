@@ -1,0 +1,26 @@
+default : libodbcpp.so libodbcpp.a
+
+OBJS = \
+	error.o \
+	connection.o \
+	dsn.o \
+	command.o \
+	string.o \
+	bind.o \
+	param.o \
+	column.o \
+	timetypepair.o \
+	modifycommand.o \
+	selectcommand.o
+
+libodbcpp.so : ${OBJS}
+	${CXX} -shared -o $@ ${OBJS} -lodbc
+libodbcpp.a : ${OBJS}
+	ar rc $@ ${OBJS}
+
+.PHONY: clean
+.PHONY: reallyclean
+clean:
+	rm -f *.o *.a *.so
+reallyclean: clean
+	rm makefile
