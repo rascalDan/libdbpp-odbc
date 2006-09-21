@@ -4,7 +4,8 @@
 #include <sqlext.h>
 
 ODBC::Command::Command(const Connection& c, String s) :
-	sql(s)
+	sql(s),
+	connection(c)
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);
 	if (rc != SQL_SUCCESS) {

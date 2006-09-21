@@ -23,6 +23,12 @@ namespace ODBC {
 			virtual			~Bind() {}
 			t				value;
 	};
+	template <>
+	class Bind<unsigned char*> {
+		public:
+			virtual			~Bind();
+			unsigned char *	value;
+	};
 }
 
 #endif

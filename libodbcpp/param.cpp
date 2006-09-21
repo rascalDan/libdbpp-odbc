@@ -68,7 +68,7 @@ ODBC::Command::bindParamI(unsigned int i, int val)
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
-ODBC::Command::bindParamI(unsigned int i, unsigned int val)
+ODBC::Command::bindParamI(unsigned int i, long long unsigned int val)
 {
 	if (i < params.size()) {
 		_Param<SQLUINTEGER>* p = Param::makeParam<SQLUINTEGER>(params[i]);
@@ -128,6 +128,16 @@ ODBC::Command::bindParamT(unsigned int i, struct tm * val)
 
 // Wrappers for all the roughly compatable types
 
+void
+ODBC::Command::bindParamI(unsigned int i, long unsigned int val)
+{
+	bindParamI(i, (long long unsigned int)val);
+}
+void
+ODBC::Command::bindParamI(unsigned int i, unsigned int val)
+{
+	bindParamI(i, (long long unsigned int)val);
+}
 void
 ODBC::Command::bindParamS(unsigned int i, String val)
 {

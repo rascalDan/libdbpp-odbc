@@ -15,6 +15,8 @@ namespace ODBC {
 
 			void				bindParamI(unsigned int i, int val);
 			void				bindParamI(unsigned int i, unsigned int val);
+			void				bindParamI(unsigned int i, long unsigned int val);
+			void				bindParamI(unsigned int i, long long unsigned int val);
 			void				bindParamF(unsigned int i, double val);
 			void				bindParamF(unsigned int i, float val);
 			void				bindParamS(unsigned int i, const char *);
@@ -28,6 +30,7 @@ namespace ODBC {
 			const String		sql;
 		protected:
 			SQLHSTMT        	hStmt;
+			const Connection&	connection;
 		private:
 			Params				params;
 	};
