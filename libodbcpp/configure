@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cp makefile.in makefile
-makedepend *.cpp
+makedepend *.cpp 2> /dev/null

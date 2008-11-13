@@ -4,7 +4,6 @@
 #include "error.h"
 
 ODBC::Connection::Connection(const DSN& d) :
-	DSN(d),
 	env(0),
 	conn(0),
 	txDepth(0),
@@ -15,7 +14,7 @@ ODBC::Connection::Connection(const DSN& d) :
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
 	}
 
-	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC2, 0);
 	if ((dberr != SQL_SUCCESS)) {
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
 	}
@@ -30,7 +29,44 @@ ODBC::Connection::Connection(const DSN& d) :
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
 	}
 
-	dberr = SQLConnect(conn, dsn, SQL_NTS, username, SQL_NTS, password, SQL_NTS);
+	dberr = SQLConnect(conn, d.dsn, SQL_NTS, d.username, SQL_NTS, d.password, SQL_NTS);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn, "Connect");
+	}
+
+	dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
+	}
+}
+
+ODBC::Connection::Connection(const String & s) :
+	env(0),
+	conn(0),
+	txDepth(0),
+	txAborted(false)
+{
+	SQLRETURN dberr = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
+	}
+
+	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC2, 0);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
+	}
+
+	dberr = SQLAllocHandle(SQL_HANDLE_DBC, env, &conn);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_ENV, env, "Allocate DBC handle");
+	}
+
+	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
+	if ((dberr != SQL_SUCCESS)) {
+		throw Error(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
+	}
+
+	dberr = SQLDriverConnect(conn, NULL, s, s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
 	if ((dberr != SQL_SUCCESS)) {
 		throw Error(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}

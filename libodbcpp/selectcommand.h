@@ -11,7 +11,8 @@ namespace ODBC {
 			SelectCommand (const Connection&, String sql);
 			~SelectCommand();
 			bool				fetch();
-			const Column&		operator[](unsigned int col) const;
+			const Column &		operator[](unsigned int col) const;
+			const Column &		operator[](const String &) const;
 			unsigned int		columnCount() const;
 		private:
 			void				execute();

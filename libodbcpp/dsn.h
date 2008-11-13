@@ -1,7 +1,7 @@
 #ifndef DSN_H
 #define DSN_H
 
-#include "string.h"
+#include "ustring.h"
 
 namespace ODBC {
 	class DSN {

@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include "string.h"
+#include "ustring.h"
 
 ODBC::String::String()
 {

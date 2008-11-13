@@ -2,6 +2,7 @@
 #include "param.h"
 #include "command.h"
 #include "error.h"
+#include <string.h>
 
 ODBC::Param::Param() :
 	bound(false)
@@ -147,7 +148,7 @@ void
 ODBC::Command::bindParamS(unsigned int i, const unsigned char * val)
 {
 	const unsigned char * x = val;
-	while (*val++);
+	while (*val++) ;
 	bindParamS(i, val, val - x);
 }
 void

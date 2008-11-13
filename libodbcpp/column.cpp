@@ -2,7 +2,7 @@
 #include "error.h"
 #include "timetypepair.h"
 
-ODBC::Column::Column(String n, u_int i) :
+ODBC::Column::Column(String n, unsigned int i) :
 	colNo(i),
 	name(n),
 	fresh(false)
@@ -24,12 +24,12 @@ ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, long long);
 ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, int);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, double);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, float);
-ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, const unsigned char * const);
+ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, const unsigned char *);
 ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, String);
 ODBC::Column::operator std::string() const {
 	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
 }
-ODBC::Column::operator const char * const () const {
+ODBC::Column::operator const char * () const {
 	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
 }
 ODBC::Column::operator const struct tm & () const {

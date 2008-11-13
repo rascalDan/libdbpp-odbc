@@ -45,7 +45,7 @@ ODBC::SelectCommand::fetch()
 
 // This is here cos it needs to be referenced by (and only by) execute
 template <class t>
-ODBC::_Column<t>::_Column(String n, u_int i) : Column(n, i)
+ODBC::_Column<t>::_Column(String n, unsigned int i) : Column(n, i)
 {
 }
 
@@ -78,6 +78,7 @@ ODBC::SelectCommand::execute()
 		}
 		colName[nameLen] = '\0';
 		switch (bindType) {
+			case -9:
 			case SQL_CHAR:
 			case SQL_VARCHAR:
 			case SQL_LONGVARCHAR:
@@ -109,6 +110,7 @@ ODBC::SelectCommand::execute()
 					columns[col] = i;
 					break;
 				}
+			case 11:
 			case SQL_DATETIME:
 			case SQL_TYPE_TIME:
 			case SQL_TYPE_DATE:
@@ -133,7 +135,27 @@ ODBC::SelectCommand::execute()
 const ODBC::Column&
 ODBC::SelectCommand::operator[](unsigned int col) const
 {
+	if (col > columns.size()) {
+		throw ODBC::Error("Column index (%u) out of range", col);
+	}
 	return *columns[col];
+}
+
+const ODBC::Column&
+ODBC::SelectCommand::operator[](const String & colName) const
+{
+	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
+		if ((*col)->name == colName) {
+			return **col;
+		}
+	}
+	throw ODBC::Error("Column (%s) does not exist", colName.c_str());
+}
+
+unsigned int
+ODBC::SelectCommand::columnCount() const
+{
+	return columns.size();
 }
 
 

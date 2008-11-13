@@ -5,9 +5,10 @@
 #include <sql.h>
 
 namespace ODBC {
-	class Connection : private DSN {
+	class Connection {
 		public:
 			Connection(const DSN& d);
+			Connection(const String& str);
 			~Connection();
 			SQLHENV 		env;
 			SQLHDBC 		conn;

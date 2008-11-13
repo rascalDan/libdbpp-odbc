@@ -1,11 +1,13 @@
-default : libodbcpp.so libodbcpp.a
+MYCXXFLAGS=$(CXXFLAGS) -c
+MYLDFLAGS=$(LDFLAGS)
 
+ALL=libodbcpp.a
 OBJS = \
 	error.o \
 	connection.o \
 	dsn.o \
 	command.o \
-	string.o \
+	ustring.o \
 	bind.o \
 	param.o \
 	column.o \
@@ -13,14 +15,12 @@ OBJS = \
 	modifycommand.o \
 	selectcommand.o
 
-libodbcpp.so : ${OBJS}
-	${CXX} -shared -o $@ ${OBJS} -lodbc
 libodbcpp.a : ${OBJS}
 	ar rc $@ ${OBJS}
+%.o : %.cpp
+	$(CXX) $(MYCXXFLAGS) -o $@ $<
 
 .PHONY: clean
-.PHONY: reallyclean
+
 clean:
-	rm -f *.o *.a *.so
-reallyclean: clean
-	rm makefile
+	rm -f ${OBJS} ${ALL}

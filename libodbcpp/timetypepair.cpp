@@ -1,4 +1,5 @@
 #include "command.h"
+#include <string.h>
 
 ODBC::TimeTypePair::TimeTypePair()
 {
