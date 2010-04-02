@@ -95,7 +95,7 @@ ODBC::Connection::~Connection()
 }
 
 int
-ODBC::Connection::beginTx()
+ODBC::Connection::beginTx() const
 {
 	SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
 	if ((dberr != SQL_SUCCESS)) {
@@ -106,7 +106,7 @@ ODBC::Connection::beginTx()
 }
 
 int
-ODBC::Connection::commitTx()
+ODBC::Connection::commitTx() const
 {
 	if (txDepth > 0) {
 		if (txAborted) {
@@ -130,7 +130,7 @@ ODBC::Connection::commitTx()
 }
 
 int
-ODBC::Connection::rollbackTx()
+ODBC::Connection::rollbackTx() const
 {
 	if (txDepth > 0) {
 		txDepth -= 1;
@@ -160,5 +160,11 @@ bool
 ODBC::Connection::txIsAborted() const
 {
 	return txAborted;
+}
+
+bool
+ODBC::Connection::inTx() const
+{
+	return (txDepth > 0);
 }
 

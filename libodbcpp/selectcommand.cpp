@@ -153,6 +153,19 @@ ODBC::SelectCommand::operator[](const String & colName) const
 }
 
 unsigned int
+ODBC::SelectCommand::getOrdinal(const String & colName) const
+{
+	unsigned int n = 0;
+	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
+		if ((*col)->name == colName) {
+			return n;
+		}
+		n += 1;
+	}
+	throw ODBC::Error("Column (%s) does not exist", colName.c_str());
+}
+
+unsigned int
 ODBC::SelectCommand::columnCount() const
 {
 	return columns.size();

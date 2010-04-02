@@ -13,11 +13,12 @@ namespace ODBC {
 			SQLHENV 		env;
 			SQLHDBC 		conn;
 
-			int				beginTx();
-			int				commitTx();
-			int				rollbackTx();
+			int				beginTx() const;
+			int				commitTx() const;
+			int				rollbackTx() const;
 			void			abortTx() const;
 			bool			txIsAborted() const;
+			bool			inTx() const;
 		private:
 			mutable unsigned int	txDepth;
 			mutable bool			txAborted;

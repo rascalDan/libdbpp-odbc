@@ -21,6 +21,7 @@ namespace ODBC {
 			operator std::string () const;
 			operator String () const;
 			operator const struct tm & () const;
+			virtual void rebind(Command *, unsigned int col) const = 0;
 
 			const unsigned int		colNo;
 			const String	name;
@@ -33,6 +34,7 @@ namespace ODBC {
 		public:
 			_Column(String, unsigned int);
 			~_Column() {}
+			void			rebind(Command *, unsigned int col) const;
 	};
 }
 

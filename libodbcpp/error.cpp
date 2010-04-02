@@ -13,29 +13,45 @@ odbc_verror(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * 
     SQLCHAR     sqlerrmsg[12800];
 
     char * action;
-	vasprintf(&action, actionfmt, ap);
+	if (vasprintf(&action, actionfmt, ap) < 0) {
+        syslog(LOG_WARNING, "%s: %d: %ld: %5.5s: \"%s\" : failed to malloc for vasprintf",
+                __FUNCTION__, err, sqlerr, sqlstatus, sqlerrmsg);
+		return;
+	}
 
     SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus, &sqlerr, sqlerrmsg,
 			sizeof(sqlerrmsg), NULL);
     switch (rc) {
     case SQL_SUCCESS:
     case SQL_SUCCESS_WITH_INFO:
-		asprintf(msg, "%d: %ld: %5.5s: \"%s\" while attempting to %s",
-                err, sqlerr, sqlstatus, sqlerrmsg, action);
+		if (msg) {
+			if (asprintf(msg, "%d: %ld: %5.5s: \"%s\" while attempting to %s",
+					err, sqlerr, sqlstatus, sqlerrmsg, action) < 1) {
+				*msg = NULL;
+			}
+		}
         syslog(LOG_WARNING, "%s: %d: %ld: %5.5s: \"%s\" while attempting to %s",
                 __FUNCTION__, err, sqlerr, sqlstatus, sqlerrmsg, action);
         break;
 
     case SQL_INVALID_HANDLE:
-        asprintf(msg, "(%d) Invalid handle passed into function trying to %s.",
-                err, action);
+		if (msg) {
+			if (asprintf(msg, "(%d) Invalid handle passed into function trying to %s.",
+					err, action) < 1) {
+				*msg = NULL;
+			}
+		}
         syslog(LOG_ERR, "%s: (%d) Invalid handle passed into function trying to %s.",
                 __FUNCTION__, err, action);
         break;
 
     case SQL_NO_DATA:
-        asprintf(msg, "(%d) No error data available for record trying to %s.",
-                err, action);
+		if (msg) {
+			if (asprintf(msg, "(%d) No error data available for record trying to %s.",
+					err, action) < 1) {
+				*msg = NULL;
+			}
+		}
         syslog(LOG_ERR, "%s: (%d) No error data available for record trying to %s.",
                 __FUNCTION__, err, action);
         break;
@@ -62,8 +78,10 @@ ODBC::Error::Error(char const * action, ...)
     va_list ap;
 
     va_start(ap, action);
-		vsyslog(LOG_ERR, action, ap);
-		vasprintf(&msg, action, ap);
+	vsyslog(LOG_ERR, action, ap);
+	if (vasprintf(&msg, action, ap) < 1) {
+		msg = NULL;
+	}
     va_end(ap);
 }
 

@@ -4,6 +4,7 @@
 #include <sql.h>
 
 namespace ODBC {
+	class Command;
 	class BindBase {
 		public:
 			BindBase();

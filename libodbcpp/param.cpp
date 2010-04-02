@@ -69,6 +69,20 @@ ODBC::Command::bindParamI(unsigned int i, int val)
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
+ODBC::Command::bindParamI(unsigned int i, long val)
+{
+	if (i < params.size()) {
+		_Param<SQLINTEGER>* p = Param::makeParam<SQLINTEGER>(params[i]);
+		p->value = val;
+		if (!p->bound) {
+			p->bind(this->hStmt, i + 1, SQL_C_SLONG, SQL_C_LONG, 0, 0,
+					&p->value, sizeof(SQLINTEGER));
+		}
+		return;
+	}
+	throw Error("%s: Bind out of bounds", __FUNCTION__);
+}
+void
 ODBC::Command::bindParamI(unsigned int i, long long unsigned int val)
 {
 	if (i < params.size()) {

@@ -1,4 +1,5 @@
 #include "column.h"
+#include "command.h"
 #include "error.h"
 #include "timetypepair.h"
 
@@ -51,4 +52,20 @@ ODBC::Column::bind(SQLHANDLE hStmt, SQLUINTEGER col, SQLSMALLINT ctype, void * b
 	}
 }
 
+#define REBIND(t, p) \
+	template<> void _Column<t>::rebind(Command * cmd, unsigned int col) const \
+	{ \
+		cmd->p(col, value); \
+	}
+namespace ODBC {
+	REBIND(int, bindParamI)
+	REBIND(long, bindParamI)
+	REBIND(unsigned int, bindParamI)
+	REBIND(long unsigned int, bindParamI)
+	REBIND(long long unsigned int, bindParamI)
+	REBIND(double, bindParamF)
+	REBIND(float, bindParamF)
+	REBIND(TimeTypePair, bindParamT)
+	REBIND(unsigned char *, bindParamS)
+}
 

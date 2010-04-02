@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdio.h>
 #include "ustring.h"
 
 ODBC::String::String()
@@ -32,7 +33,9 @@ ODBC::String::Format(const char * fmt, ...)
 	char * buf;
 	va_list va;
 	va_start(va, fmt);
-	vasprintf(&buf, fmt, va);
+	if (vasprintf(&buf, fmt, va)) {
+		buf = NULL;
+	}
 	va_end(va);
 	return buf;
 }

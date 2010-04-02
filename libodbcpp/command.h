@@ -14,6 +14,7 @@ namespace ODBC {
 			virtual ~Command() = 0;
 
 			void				bindParamI(unsigned int i, int val);
+			void				bindParamI(unsigned int i, long val);
 			void				bindParamI(unsigned int i, unsigned int val);
 			void				bindParamI(unsigned int i, long unsigned int val);
 			void				bindParamI(unsigned int i, long long unsigned int val);
@@ -26,9 +27,11 @@ namespace ODBC {
 			void				bindParamS(unsigned int i, String);
 			void				bindParamT(unsigned int i, struct tm *);
 			void				bindParamT(unsigned int i, time_t);
+			void				bindParamT(unsigned int i, const TimeTypePair & p) { bindParamT(i, p.c()); }
 
 			const String		sql;
 		protected:
+			friend class BindBase;
 			SQLHSTMT        	hStmt;
 			const Connection&	connection;
 		private:
