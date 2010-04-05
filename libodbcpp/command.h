@@ -25,9 +25,9 @@ namespace ODBC {
 			void				bindParamS(unsigned int i, const unsigned char *, size_t);
 			void				bindParamS(unsigned int i, std::string);
 			void				bindParamS(unsigned int i, String);
-			void				bindParamT(unsigned int i, struct tm *);
+			void				bindParamT(unsigned int i, const struct tm *);
 			void				bindParamT(unsigned int i, time_t);
-			void				bindParamT(unsigned int i, const TimeTypePair & p) { bindParamT(i, p.c()); }
+			void				bindParamT(unsigned int i, const TimeTypePair & p);
 
 			const String		sql;
 		protected:

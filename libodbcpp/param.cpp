@@ -125,11 +125,11 @@ ODBC::Command::bindParamS(unsigned int i, const unsigned char * val, size_t leng
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
-ODBC::Command::bindParamT(unsigned int i, struct tm * val)
+ODBC::Command::bindParamT(unsigned int i, const TimeTypePair & val)
 {
 	if (i < params.size()) {
 		_Param<TimeTypePair>* p = Param::makeParam<TimeTypePair>(params[i]);
-		p->value.set(*val);
+		p->value = val;
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP,
 					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value.sql(), sizeof(SQL_TIMESTAMP_STRUCT));
@@ -163,7 +163,7 @@ ODBC::Command::bindParamS(unsigned int i, const unsigned char * val)
 {
 	const unsigned char * x = val;
 	while (*val++) ;
-	bindParamS(i, val, val - x);
+	bindParamS(i, x, val - x);
 }
 void
 ODBC::Command::bindParamS(unsigned int i, const char * val)
@@ -186,5 +186,10 @@ ODBC::Command::bindParamT(unsigned int i, time_t val)
 	struct tm t;
 	gmtime_r(&val, &t);
 	bindParamT(i, &t);
+}
+void
+ODBC::Command::bindParamT(unsigned int i, const struct tm * val)
+{
+	bindParamT(i, TimeTypePair(*val));
 }
 

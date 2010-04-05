@@ -97,9 +97,11 @@ ODBC::Connection::~Connection()
 int
 ODBC::Connection::beginTx() const
 {
-	SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-	if ((dberr != SQL_SUCCESS)) {
-		throw Error(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
+	if (txDepth == 0) {
+		SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
+		if ((dberr != SQL_SUCCESS)) {
+			throw Error(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
+		}
 	}
 	txDepth += 1;
 	return txDepth;
