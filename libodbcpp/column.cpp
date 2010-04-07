@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "column.h"
 #include "command.h"
 #include "error.h"
@@ -67,5 +69,54 @@ namespace ODBC {
 	REBIND(float, bindParamF)
 	REBIND(TimeTypePair, bindParamT)
 	REBIND(unsigned char *, bindParamS)
-}
 
+	template <>
+	int
+	_Column<SQLDOUBLE>::writeToBuf(char ** buf, const char * fmt) const
+	{
+		return asprintf(buf, fmt, value);
+	}
+	template <>
+	int
+	_Column<SQLDOUBLE>::writeToBuf(char ** buf) const
+	{
+		return writeToBuf(buf, "%d");
+	}
+	template <>
+	int
+	_Column<SQLINTEGER>::writeToBuf(char ** buf, const char * fmt) const
+	{
+		return asprintf(buf, fmt, value);
+	}
+	template <>
+	int
+	_Column<SQLINTEGER>::writeToBuf(char ** buf) const
+	{
+		return writeToBuf(buf, "%ld");
+	}
+	template <>
+	int
+	_Column<SQLCHAR*>::writeToBuf(char ** buf, const char * fmt) const
+	{
+		return asprintf(buf, fmt, value);
+	}
+	template <>
+	int
+	_Column<SQLCHAR*>::writeToBuf(char ** buf) const
+	{
+		return writeToBuf(buf, "%s");
+	}
+	template <>
+	int
+	_Column<TimeTypePair>::writeToBuf(char ** buf, const char * fmt) const
+	{
+		*buf = (char *)malloc(30);
+		return strftime(*buf, sizeof(buf), fmt, &value.c());
+	}
+	template <>
+	int
+	_Column<TimeTypePair>::writeToBuf(char ** buf) const
+	{
+		return writeToBuf(buf, "%F %T");
+	}
+}

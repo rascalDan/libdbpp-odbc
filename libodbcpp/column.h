@@ -22,6 +22,8 @@ namespace ODBC {
 			operator String () const;
 			operator const struct tm & () const;
 			virtual void rebind(Command *, unsigned int col) const = 0;
+			virtual int writeToBuf(char ** buf) const = 0;
+			virtual int writeToBuf(char ** buf, const char * fmt) const = 0;
 
 			const unsigned int		colNo;
 			const String	name;
@@ -35,6 +37,8 @@ namespace ODBC {
 			_Column(String, unsigned int);
 			~_Column() {}
 			void			rebind(Command *, unsigned int col) const;
+			int				writeToBuf(char ** buf) const;
+			int				writeToBuf(char ** buf, const char * fmt) const;
 	};
 }
 
