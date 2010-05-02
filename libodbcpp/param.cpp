@@ -1,6 +1,7 @@
 #include <sqlext.h>
 #include "param.h"
 #include "command.h"
+#include "column.h"
 #include "error.h"
 #include <string.h>
 
@@ -125,14 +126,28 @@ ODBC::Command::bindParamS(unsigned int i, const unsigned char * val, size_t leng
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
-ODBC::Command::bindParamT(unsigned int i, const TimeTypePair & val)
+ODBC::Command::bindParamT(unsigned int i, const struct tm * val)
 {
 	if (i < params.size()) {
-		_Param<TimeTypePair>* p = Param::makeParam<TimeTypePair>(params[i]);
+		_Param<SQL_TIMESTAMP_STRUCT>* p = Param::makeParam<SQL_TIMESTAMP_STRUCT>(params[i]);
+		p->value << *val;
+		if (!p->bound) {
+			p->bind(this->hStmt, i + 1, SQL_C_TIMESTAMP, SQL_TYPE_TIMESTAMP,
+					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value, sizeof(SQL_TIMESTAMP_STRUCT));
+		}
+		return;
+	}
+	throw Error("%s: Bind out of bounds", __FUNCTION__);
+}
+void
+ODBC::Command::bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT & val)
+{
+	if (i < params.size()) {
+		_Param<SQL_TIMESTAMP_STRUCT>* p = Param::makeParam<SQL_TIMESTAMP_STRUCT>(params[i]);
 		p->value = val;
 		if (!p->bound) {
-			p->bind(this->hStmt, i + 1, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP,
-					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value.sql(), sizeof(SQL_TIMESTAMP_STRUCT));
+			p->bind(this->hStmt, i + 1, SQL_C_TIMESTAMP, SQL_TIMESTAMP,
+					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value, sizeof(SQL_TIMESTAMP_STRUCT));
 		}
 		return;
 	}
@@ -154,7 +169,7 @@ ODBC::Command::bindParamI(unsigned int i, unsigned int val)
 	bindParamI(i, (long long unsigned int)val);
 }
 void
-ODBC::Command::bindParamS(unsigned int i, String val)
+ODBC::Command::bindParamS(unsigned int i, const String & val)
 {
 	bindParamS(i, val.c_str(), val.size());
 }
@@ -171,7 +186,7 @@ ODBC::Command::bindParamS(unsigned int i, const char * val)
 	bindParamS(i, (unsigned char *)val, strlen(val));
 }
 void
-ODBC::Command::bindParamS(unsigned int i, std::string val)
+ODBC::Command::bindParamS(unsigned int i, const std::string & val)
 {
 	bindParamS(i, (unsigned char *)val.c_str(), val.size());
 }
@@ -186,10 +201,5 @@ ODBC::Command::bindParamT(unsigned int i, time_t val)
 	struct tm t;
 	gmtime_r(&val, &t);
 	bindParamT(i, &t);
-}
-void
-ODBC::Command::bindParamT(unsigned int i, const struct tm * val)
-{
-	bindParamT(i, TimeTypePair(*val));
 }
 

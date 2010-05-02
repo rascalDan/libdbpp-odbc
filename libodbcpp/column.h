@@ -20,7 +20,7 @@ namespace ODBC {
 			operator const char * () const;
 			operator std::string () const;
 			operator String () const;
-			operator const struct tm & () const;
+			operator struct tm () const;
 			virtual void rebind(Command *, unsigned int col) const = 0;
 			virtual int writeToBuf(char ** buf) const = 0;
 			virtual int writeToBuf(char ** buf, const char * fmt) const = 0;
@@ -41,6 +41,9 @@ namespace ODBC {
 			int				writeToBuf(char ** buf, const char * fmt) const;
 	};
 }
+
+void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm &);
+void operator << (struct tm &, const SQL_TIMESTAMP_STRUCT & target);
 
 #endif
 

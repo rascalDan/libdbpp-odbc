@@ -2,6 +2,7 @@
 #include "error.h"
 #include "column.h"
 #include <sqlext.h>
+#include <stdio.h>
 
 ODBC::SelectCommand::SelectCommand(const Connection& c, String s) :
 	Command(c, s)
@@ -110,15 +111,14 @@ ODBC::SelectCommand::execute()
 					columns[col] = i;
 					break;
 				}
-			case 11:
+			case SQL_TIMESTAMP:
 			case SQL_DATETIME:
 			case SQL_TYPE_TIME:
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
 				{
-					_Column<TimeTypePair>* t = new _Column<TimeTypePair>(colName, col);
-					t->bind(hStmt, sqlcol, SQL_C_TYPE_TIMESTAMP, &t->value.sql(),
-							sizeof(SQL_TIMESTAMP_STRUCT));
+					_Column<SQL_TIMESTAMP_STRUCT>* t = new _Column<SQL_TIMESTAMP_STRUCT>(colName, col);
+					t->bind(hStmt, sqlcol, SQL_C_TIMESTAMP, &t->value, sizeof(SQL_TIMESTAMP_STRUCT));
 					columns[col] = t;
 					break;
 				}

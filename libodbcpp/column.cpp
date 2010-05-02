@@ -3,7 +3,6 @@
 #include "column.h"
 #include "command.h"
 #include "error.h"
-#include "timetypepair.h"
 
 ODBC::Column::Column(String n, unsigned int i) :
 	colNo(i),
@@ -35,13 +34,11 @@ ODBC::Column::operator std::string() const {
 ODBC::Column::operator const char * () const {
 	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
 }
-ODBC::Column::operator const struct tm & () const {
-	const _Column<TimeTypePair>& c = dynamic_cast<const _Column<TimeTypePair>& >(*this);
-	if (c.fresh) {
-		c.value.sql2c();
-		c.fresh = false;
-	}
-	return c.value.c();
+ODBC::Column::operator struct tm () const {
+	const _Column<SQL_TIMESTAMP_STRUCT>& c = dynamic_cast<const _Column<SQL_TIMESTAMP_STRUCT>& >(*this);
+	struct tm rtn;
+	rtn << c.value;
+	return rtn;
 }
 
 void
@@ -67,7 +64,7 @@ namespace ODBC {
 	REBIND(long long unsigned int, bindParamI)
 	REBIND(double, bindParamF)
 	REBIND(float, bindParamF)
-	REBIND(TimeTypePair, bindParamT)
+	REBIND(SQL_TIMESTAMP_STRUCT, bindParamT)
 	REBIND(unsigned char *, bindParamS)
 
 	template <>
@@ -108,15 +105,37 @@ namespace ODBC {
 	}
 	template <>
 	int
-	_Column<TimeTypePair>::writeToBuf(char ** buf, const char * fmt) const
+	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf, const char * fmt) const
 	{
 		*buf = (char *)malloc(30);
-		return strftime(*buf, sizeof(buf), fmt, &value.c());
+		struct tm t;
+		t << value;
+		return strftime(*buf, 30, fmt, &t);
 	}
 	template <>
 	int
-	_Column<TimeTypePair>::writeToBuf(char ** buf) const
+	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf) const
 	{
 		return writeToBuf(buf, "%F %T");
 	}
+}
+
+void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm & src)
+{
+	target.year = src.tm_year + 1900;
+	target.month = src.tm_mon + 1;
+	target.day = src.tm_mday;
+	target.hour = src.tm_hour;
+	target.minute = src.tm_min;
+	target.second = src.tm_sec;
+	target.fraction = 0;
+}
+void operator << (struct tm & target, const SQL_TIMESTAMP_STRUCT & src)
+{
+	target.tm_year = src.year - 1900;
+	target.tm_mon = src.month - 1;
+	target.tm_mday = src.day;
+	target.tm_hour = src.hour;
+	target.tm_min = src.minute;
+	target.tm_sec = src.second;
 }

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "connection.h"
-#include "timetypepair.h"
 
 namespace ODBC {
 	class Param;
@@ -23,11 +22,11 @@ namespace ODBC {
 			void				bindParamS(unsigned int i, const char *);
 			void				bindParamS(unsigned int i, const unsigned char *);
 			void				bindParamS(unsigned int i, const unsigned char *, size_t);
-			void				bindParamS(unsigned int i, std::string);
-			void				bindParamS(unsigned int i, String);
+			void				bindParamS(unsigned int i, const std::string &);
+			void				bindParamS(unsigned int i, const String &);
 			void				bindParamT(unsigned int i, const struct tm *);
+			void				bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT &);
 			void				bindParamT(unsigned int i, time_t);
-			void				bindParamT(unsigned int i, const TimeTypePair & p);
 
 			const String		sql;
 		protected:
