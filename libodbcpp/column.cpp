@@ -77,7 +77,7 @@ namespace ODBC {
 	int
 	_Column<SQLDOUBLE>::writeToBuf(char ** buf) const
 	{
-		return writeToBuf(buf, "%d");
+		return writeToBuf(buf, "%g");
 	}
 	template <>
 	int
