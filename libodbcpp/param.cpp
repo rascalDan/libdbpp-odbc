@@ -45,12 +45,12 @@ template <class T>
 void
 ODBC::Param::makeBindLen(T*& p, size_t newLen)
 {
-	if (bindSize <= newLen) {
+	if (bindSize < newLen) {
 		if (bindSize) {
-			delete p;
+			delete[] p;
 		}
 		bindSize = newLen;
-		p = new T[newLen];
+		p = new T[newLen + 1];
 	}
 	bindLen = newLen;
 }
@@ -118,6 +118,7 @@ ODBC::Command::bindParamS(unsigned int i, const unsigned char * val, size_t leng
 		_Param<SQLCHAR*>* p = Param::makeParam<SQLCHAR*>(params[i]);
 		p->makeBindLen(p->value, length);
 		memcpy(p->value, val, length);
+		p->value[length] = '\0';
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value, length);
 		}
