@@ -1,0 +1,2 @@
+lib odbcpp : [ glob *.cpp ] :
+	<link>static ;
