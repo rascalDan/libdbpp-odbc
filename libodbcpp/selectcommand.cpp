@@ -16,10 +16,12 @@ ODBC::SelectCommand::~SelectCommand()
 			delete *i;
 		}
 	}
-	RETCODE rc;
-	if ((rc = SQLCloseCursor(hStmt)) != SQL_SUCCESS) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLCloseCursor",
-				__FUNCTION__);
+	if (columns.size()) {
+		RETCODE rc;
+		if ((rc = SQLCloseCursor(hStmt)) != SQL_SUCCESS) {
+			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLCloseCursor",
+					__FUNCTION__);
+		}
 	}
 }
 
