@@ -8,13 +8,13 @@ namespace ODBC {
 	class SelectCommand : public Command {
 			typedef std::vector<Column*> Columns;
 		public:
-			SelectCommand (const Connection&, String sql);
+			SelectCommand (const Connection &, const std::string & sql);
 			~SelectCommand();
 			bool				fetch();
 			const Column &		operator[](unsigned int col) const;
-			const Column &		operator[](const String &) const;
+			const Column &		operator[](const Glib::ustring &) const;
 			unsigned int		columnCount() const;
-			unsigned int		getOrdinal(const String &) const;
+			unsigned int		getOrdinal(const Glib::ustring &) const;
 		private:
 			void				execute();
 			Columns				columns;			

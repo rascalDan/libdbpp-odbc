@@ -4,15 +4,21 @@
 #include "command.h"
 #include "error.h"
 
-ODBC::Column::Column(String n, unsigned int i) :
+ODBC::Column::Column(const Glib::ustring & n, unsigned int i) :
 	colNo(i),
 	name(n),
-	fresh(false)
+	bindSize(0)
 {
 }
 
 ODBC::Column::~Column()
 {
+}
+
+bool
+ODBC::Column::isNull() const
+{
+	return (bindLen == SQL_NULL_DATA);
 }
 
 #define ODBC_DEFAULT_COLUMN_CAST(ctype, rtype) \
@@ -27,7 +33,9 @@ ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, int);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, double);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, float);
 ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, const unsigned char *);
-ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, String);
+ODBC::Column::operator Glib::ustring() const {
+	return Glib::ustring((const char *)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value));
+}
 ODBC::Column::operator std::string() const {
 	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
 }
@@ -65,7 +73,10 @@ namespace ODBC {
 	REBIND(double, bindParamF)
 	REBIND(float, bindParamF)
 	REBIND(SQL_TIMESTAMP_STRUCT, bindParamT)
-	REBIND(unsigned char *, bindParamS)
+	template<> void _Column<unsigned char *>::rebind(Command * cmd, unsigned int col) const \
+	{
+		cmd->bindParamS(col, (char *)value);
+	}
 
 	template <>
 	int

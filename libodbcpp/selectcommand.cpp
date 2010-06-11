@@ -4,7 +4,7 @@
 #include <sqlext.h>
 #include <stdio.h>
 
-ODBC::SelectCommand::SelectCommand(const Connection& c, String s) :
+ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
 	Command(c, s)
 {
 }
@@ -32,9 +32,6 @@ ODBC::SelectCommand::fetch()
 	RETCODE rc = SQLFetch(hStmt);
 	switch (rc) {
 		case SQL_SUCCESS:
-			for (Columns::iterator col = columns.begin(); col != columns.end(); col++) {
-				(*col)->fresh = true;
-			}
 			return true;
 		case SQL_NO_DATA:
 			return false;
@@ -46,7 +43,7 @@ ODBC::SelectCommand::fetch()
 
 // This is here cos it needs to be referenced by (and only by) execute
 template <class t>
-ODBC::_Column<t>::_Column(String n, unsigned int i) : Column(n, i)
+ODBC::_Column<t>::_Column(const Glib::ustring & n, unsigned int i) : Column(n, i)
 {
 }
 
@@ -68,16 +65,16 @@ ODBC::SelectCommand::execute()
 	}
 	columns.resize(colCount);
 	for (int col = 0; col < colCount; col++) {
-		SQLCHAR colName[300];
+		SQLCHAR _colName[300];
 		SQLSMALLINT nameLen, dp, nullable, bindType;
 		SQLUINTEGER bindSize;
 		int sqlcol = col + 1;
-		if ((rc = SQLDescribeCol(hStmt, sqlcol, colName, sizeof(colName), &nameLen, &bindType,
+		if ((rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
 					&bindSize, &dp, &nullable)) != SQL_SUCCESS) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLDescribeCol for %d",
 					__FUNCTION__, col);
 		}
-		colName[nameLen] = '\0';
+		Glib::ustring colName((const char *)_colName, nameLen);
 		switch (bindType) {
 			case -9:
 			case SQL_CHAR:
@@ -125,7 +122,7 @@ ODBC::SelectCommand::execute()
 			default:
 				throw Error(
 						"%s: Bad column type: idx=%d, name=%s, type=%d, size=%ld, dp=%d, null=%d",
-						__FUNCTION__, col, colName, bindType, bindSize, dp, nullable);
+						__FUNCTION__, col, _colName, bindType, bindSize, dp, nullable);
 				break;
 		};
 	}
@@ -142,7 +139,7 @@ ODBC::SelectCommand::operator[](unsigned int col) const
 }
 
 const ODBC::Column&
-ODBC::SelectCommand::operator[](const String & colName) const
+ODBC::SelectCommand::operator[](const Glib::ustring & colName) const
 {
 	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
 		if ((*col)->name == colName) {
@@ -153,7 +150,7 @@ ODBC::SelectCommand::operator[](const String & colName) const
 }
 
 unsigned int
-ODBC::SelectCommand::getOrdinal(const String & colName) const
+ODBC::SelectCommand::getOrdinal(const Glib::ustring & colName) const
 {
 	unsigned int n = 0;
 	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {

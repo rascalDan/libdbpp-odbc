@@ -9,14 +9,11 @@ namespace ODBC {
 		public:
 			BindBase();
 			virtual			~BindBase() {}
-			SQLINTEGER		length() const;
-			SQLUINTEGER		size() const;
-			bool			isNull() const;
-		private:
-			SQLUINTEGER		bindSize;			// Allocated memory
+		protected:
 			SQLINTEGER		bindLen;			// Used memory
 			friend class Param;
 			friend class Column;
+			friend class Command;
 	};
 	template <class t>
 	class Bind {

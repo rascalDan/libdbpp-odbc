@@ -1,13 +1,13 @@
 #ifndef ODBC_COLUMN_H
 #define ODBC_COLUMN_H
 
-#include "ustring.h"
+#include <glibmm/ustring.h>
 #include "bind.h"
 
 namespace ODBC {
 	class Column : public BindBase {
 		public:
-			Column(String, unsigned int);
+			Column(const Glib::ustring &, unsigned int);
 			virtual			~Column();
 			void			bind(SQLHANDLE, SQLUINTEGER, SQLSMALLINT, void*, size_t);
 			operator int () const;
@@ -19,22 +19,23 @@ namespace ODBC {
 			operator const unsigned char * () const;
 			operator const char * () const;
 			operator std::string () const;
-			operator String () const;
+			operator Glib::ustring () const;
 			operator struct tm () const;
 			virtual void rebind(Command *, unsigned int col) const = 0;
 			virtual int writeToBuf(char ** buf) const = 0;
 			virtual int writeToBuf(char ** buf, const char * fmt) const = 0;
+			bool isNull() const;
 
 			const unsigned int		colNo;
-			const String	name;
+			const Glib::ustring		name;
 		private:
-			mutable bool	fresh;
+			SQLUINTEGER		bindSize;			// Allocated memory
 			friend class SelectCommand;
 	};
 	template <class t>
 	class _Column : public Bind<t>, public Column {
 		public:
-			_Column(String, unsigned int);
+			_Column(const Glib::ustring &, unsigned int);
 			~_Column() {}
 			void			rebind(Command *, unsigned int col) const;
 			int				writeToBuf(char ** buf) const;

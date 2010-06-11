@@ -1,16 +1,16 @@
 #ifndef DSN_H
 #define DSN_H
 
-#include "ustring.h"
+#include <string>
 
 namespace ODBC {
 	class DSN {
 		public:
-			DSN(String, String, String);
+			DSN(const std::string &, const std::string &, const std::string &);
 			virtual ~DSN();
-			String     	dsn;            // DSN name for odbc.ini
-			String     	username;       // User name
-			String     	password;       // Password
+			const std::string	dsn;            // DSN name for odbc.ini
+			const std::string	username;       // User name
+			const std::string	password;       // Password
 	};
 }
 

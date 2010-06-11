@@ -3,7 +3,7 @@
 #include "param.h"
 #include <sqlext.h>
 
-ODBC::Command::Command(const Connection& c, String s) :
+ODBC::Command::Command(const Connection & c, const std::string & s) :
 	sql(s),
 	connection(c)
 {
@@ -11,7 +11,7 @@ ODBC::Command::Command(const Connection& c, String s) :
 	if (rc != SQL_SUCCESS) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Allocate statement handle");
 	}
-    rc = SQLPrepare(hStmt, sql, sql.size());
+    rc = SQLPrepare(hStmt, (SQLCHAR*)sql.c_str(), sql.length());
     if (rc != SQL_SUCCESS) {
         SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Prepare statement");

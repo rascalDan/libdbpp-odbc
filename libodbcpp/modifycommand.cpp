@@ -1,7 +1,7 @@
 #include "modifycommand.h"
 #include "error.h"
 
-ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection &c, String sql) :
+ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection & c, const std::string & sql) :
 	Command(c, sql)
 {
 }

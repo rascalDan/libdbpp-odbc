@@ -13,8 +13,6 @@ namespace ODBC {
 			bool			bound;				// Has SqlBind... been called?
 			void			bind(SQLHANDLE, SQLUINTEGER, SQLSMALLINT, SQLSMALLINT, SQLINTEGER,
 					SQLINTEGER, const void*, size_t);
-			template <class T>
-			void			makeBindLen(T*&, size_t newSize);
 			template <class t>
 			static ODBC::_Param<t>*
 							makeParam(ODBC::Param*& p);

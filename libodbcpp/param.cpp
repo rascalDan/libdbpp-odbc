@@ -34,25 +34,11 @@ ODBC::Param::bind(SQLHANDLE hStmt, SQLUINTEGER col, SQLSMALLINT ctype, SQLSMALLI
 		SQLINTEGER colsize, SQLINTEGER dp, const void* value, size_t buflen)
 {
 	RETCODE rc = SQLBindParameter(hStmt, col, SQL_PARAM_INPUT, ctype, stype,
-			colsize, dp, (void*)value, buflen, (SQLINTEGER*)&bindLen);
+			colsize, dp, (void*)value, buflen, &bindLen);
 	if (rc != SQL_SUCCESS) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: Bind for column %lu",
 				__FUNCTION__, col);
 	}
-}
-
-template <class T>
-void
-ODBC::Param::makeBindLen(T*& p, size_t newLen)
-{
-	if (bindSize < newLen) {
-		if (bindSize) {
-			delete[] p;
-		}
-		bindSize = newLen;
-		p = new T[newLen + 1];
-	}
-	bindLen = newLen;
 }
 
 void
@@ -64,6 +50,7 @@ ODBC::Command::bindParamI(unsigned int i, int val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_SLONG, SQL_C_LONG, 0, 0,
 					&p->value, sizeof(SQLINTEGER));
+			p->bound = true;
 		}
 		return;
 	}
@@ -78,6 +65,7 @@ ODBC::Command::bindParamI(unsigned int i, long val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_SLONG, SQL_C_LONG, 0, 0,
 					&p->value, sizeof(SQLINTEGER));
+			p->bound = true;
 		}
 		return;
 	}
@@ -92,6 +80,7 @@ ODBC::Command::bindParamI(unsigned int i, long long unsigned int val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_ULONG, SQL_C_ULONG, 0, 0,
 					&p->value, sizeof(SQLUINTEGER));
+			p->bound = true;
 		}
 		return;
 	}
@@ -106,22 +95,32 @@ ODBC::Command::bindParamF(unsigned int i, double val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_DOUBLE, SQL_DOUBLE, 0, 0,
 					&p->value, sizeof(SQLDOUBLE));
+			p->bound = true;
 		}
 		return;
 	}
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
-ODBC::Command::bindParamS(unsigned int i, const unsigned char * val, size_t length)
+ODBC::Command::bindParamS(unsigned int i, const Glib::ustring & val)
 {
 	if (i < params.size()) {
-		_Param<SQLCHAR*>* p = Param::makeParam<SQLCHAR*>(params[i]);
-		p->makeBindLen(p->value, length);
-		memcpy(p->value, val, length);
-		p->value[length] = '\0';
-		if (!p->bound) {
-			p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value, length);
-		}
+		_Param<Glib::ustring>* p = Param::makeParam<Glib::ustring>(params[i]);
+		p->value = val;
+		p->bindLen = p->value.bytes();
+		p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value.data(), p->value.bytes());
+		return;
+	}
+	throw Error("%s: Bind out of bounds", __FUNCTION__);
+}
+void
+ODBC::Command::bindParamS(unsigned int i, const char * val, size_t len)
+{
+	if (i < params.size()) {
+		_Param<Glib::ustring>* p = Param::makeParam<Glib::ustring>(params[i]);
+		p->value.assign(val, len);
+		p->bindLen = len;
+		p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value.data(), p->value.bytes());
 		return;
 	}
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
@@ -135,6 +134,7 @@ ODBC::Command::bindParamT(unsigned int i, const struct tm * val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_TIMESTAMP, SQL_TYPE_TIMESTAMP,
 					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value, sizeof(SQL_TIMESTAMP_STRUCT));
+			p->bound = true;
 		}
 		return;
 	}
@@ -149,6 +149,7 @@ ODBC::Command::bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT & val)
 		if (!p->bound) {
 			p->bind(this->hStmt, i + 1, SQL_C_TIMESTAMP, SQL_TIMESTAMP,
 					sizeof(SQL_TIMESTAMP_STRUCT), 0, &p->value, sizeof(SQL_TIMESTAMP_STRUCT));
+			p->bound = true;
 		}
 		return;
 	}
@@ -170,26 +171,14 @@ ODBC::Command::bindParamI(unsigned int i, unsigned int val)
 	bindParamI(i, (long long unsigned int)val);
 }
 void
-ODBC::Command::bindParamS(unsigned int i, const String & val)
-{
-	bindParamS(i, val.c_str(), val.size());
-}
-void
-ODBC::Command::bindParamS(unsigned int i, const unsigned char * val)
-{
-	const unsigned char * x = val;
-	while (*val++) ;
-	bindParamS(i, x, val - x);
-}
-void
 ODBC::Command::bindParamS(unsigned int i, const char * val)
 {
-	bindParamS(i, (unsigned char *)val, strlen(val));
+	bindParamS(i, val, strlen(val));
 }
 void
 ODBC::Command::bindParamS(unsigned int i, const std::string & val)
 {
-	bindParamS(i, (unsigned char *)val.c_str(), val.size());
+	bindParamS(i, val.c_str(), val.length());
 }
 void
 ODBC::Command::bindParamF(unsigned int i, float val)

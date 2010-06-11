@@ -1,6 +1,6 @@
 #include "dsn.h"
 
-ODBC::DSN::DSN(String d, String u, String p) :
+ODBC::DSN::DSN(const std::string & d, const std::string & u, const std::string & p) :
 	dsn(d),
 	username(u),
 	password(p)

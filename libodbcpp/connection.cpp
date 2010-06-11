@@ -29,7 +29,8 @@ ODBC::Connection::Connection(const DSN& d) :
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
 	}
 
-	dberr = SQLConnect(conn, d.dsn, SQL_NTS, d.username, SQL_NTS, d.password, SQL_NTS);
+	dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
+			(SQLCHAR*)d.username.c_str(), SQL_NTS, (SQLCHAR*)d.password.c_str(), SQL_NTS);
 	if ((dberr != SQL_SUCCESS)) {
 		throw Error(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}
@@ -40,7 +41,7 @@ ODBC::Connection::Connection(const DSN& d) :
 	}
 }
 
-ODBC::Connection::Connection(const String & s) :
+ODBC::Connection::Connection(const std::string & s) :
 	env(0),
 	conn(0),
 	txDepth(0),
@@ -66,7 +67,7 @@ ODBC::Connection::Connection(const String & s) :
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
 	}
 
-	dberr = SQLDriverConnect(conn, NULL, s, s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
+	dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
 	if ((dberr != SQL_SUCCESS)) {
 		throw Error(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}

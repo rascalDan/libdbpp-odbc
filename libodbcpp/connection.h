@@ -8,7 +8,7 @@ namespace ODBC {
 	class Connection {
 		public:
 			Connection(const DSN& d);
-			Connection(const String& str);
+			Connection(const std::string & str);
 			~Connection();
 			SQLHENV 		env;
 			SQLHDBC 		conn;

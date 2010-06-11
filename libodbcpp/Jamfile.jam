@@ -1,2 +1,6 @@
-lib odbcpp : [ glob *.cpp ] :
+alias glibmm : : : :
+	<cflags>"`pkg-config --cflags glibmm-2.4`"
+	<linkflags>"`pkg-config --libs glibmm-2.4`"
+	;
+lib odbcpp : glibmm [ glob *.cpp ] :
 	<link>static ;
