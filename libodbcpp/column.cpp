@@ -91,6 +91,18 @@ namespace ODBC {
 		return writeToBuf(buf, "%g");
 	}
 	template <>
+	Glib::ustring
+	_Column<SQLDOUBLE>::compose() const
+	{
+		return Glib::ustring::compose("%1", value);
+	}
+	template <>
+	Glib::ustring
+	_Column<SQLDOUBLE>::compose(const Glib::ustring & fmt) const
+	{
+		return Glib::ustring::compose(fmt, value);
+	}
+	template <>
 	int
 	_Column<SQLINTEGER>::writeToBuf(char ** buf, const char * fmt) const
 	{
@@ -101,6 +113,18 @@ namespace ODBC {
 	_Column<SQLINTEGER>::writeToBuf(char ** buf) const
 	{
 		return writeToBuf(buf, "%ld");
+	}
+	template <>
+	Glib::ustring
+	_Column<SQLINTEGER>::compose() const
+	{
+		return Glib::ustring::compose("%1", value);
+	}
+	template <>
+	Glib::ustring
+	_Column<SQLINTEGER>::compose(const Glib::ustring & fmt) const
+	{
+		return Glib::ustring::compose(fmt, value);
 	}
 	template <>
 	int
@@ -115,19 +139,47 @@ namespace ODBC {
 		return writeToBuf(buf, "%s");
 	}
 	template <>
+	Glib::ustring
+	_Column<SQLCHAR*>::compose() const
+	{
+		return Glib::ustring::compose("%1", value);
+	}
+	template <>
+	Glib::ustring
+	_Column<SQLCHAR*>::compose(const Glib::ustring & fmt) const
+	{
+		return Glib::ustring::compose(fmt, value);
+	}
+	template <>
 	int
 	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf, const char * fmt) const
 	{
-		*buf = (char *)malloc(30);
+		*buf = (char *)malloc(300);
 		struct tm t;
 		t << value;
-		return strftime(*buf, 30, fmt, &t);
+		return strftime(*buf, sizeof(*buf), fmt, &t);
 	}
 	template <>
 	int
 	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf) const
 	{
 		return writeToBuf(buf, "%F %T");
+	}
+	template <>
+	Glib::ustring
+	_Column<SQL_TIMESTAMP_STRUCT>::compose(const Glib::ustring & fmt) const
+	{
+		char buf[300];
+		struct tm t;
+		t << value;
+		int len = strftime(buf, sizeof(buf), fmt.c_str(), &t);
+		return Glib::ustring(buf, len);
+	}
+	template <>
+	Glib::ustring
+	_Column<SQL_TIMESTAMP_STRUCT>::compose() const
+	{
+		return compose("%F %T");
 	}
 }
 

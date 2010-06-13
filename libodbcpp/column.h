@@ -22,6 +22,8 @@ namespace ODBC {
 			operator Glib::ustring () const;
 			operator struct tm () const;
 			virtual void rebind(Command *, unsigned int col) const = 0;
+			virtual Glib::ustring compose() const = 0;
+			virtual Glib::ustring compose(const Glib::ustring & fmt) const = 0;
 			virtual int writeToBuf(char ** buf) const = 0;
 			virtual int writeToBuf(char ** buf, const char * fmt) const = 0;
 			bool isNull() const;
@@ -38,6 +40,8 @@ namespace ODBC {
 			_Column(const Glib::ustring &, unsigned int);
 			~_Column() {}
 			void			rebind(Command *, unsigned int col) const;
+			Glib::ustring	compose() const;
+			Glib::ustring	compose(const Glib::ustring & fmt) const;
 			int				writeToBuf(char ** buf) const;
 			int				writeToBuf(char ** buf, const char * fmt) const;
 	};
