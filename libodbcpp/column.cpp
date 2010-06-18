@@ -157,7 +157,7 @@ namespace ODBC {
 		*buf = (char *)malloc(300);
 		struct tm t;
 		t << value;
-		return strftime(*buf, sizeof(*buf), fmt, &t);
+		return strftime(*buf, 300, fmt, &t);
 	}
 	template <>
 	int
