@@ -19,6 +19,9 @@ namespace ODBC {
 			void			abortTx() const;
 			bool			txIsAborted() const;
 			bool			inTx() const;
+			std::string		getAttrStr(SQLINTEGER) const;
+			SQLINTEGER		getAttrInt(SQLINTEGER) const;
+
 		private:
 			mutable unsigned int	txDepth;
 			mutable bool			txAborted;

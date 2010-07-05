@@ -1,5 +1,6 @@
 #include <sqlext.h>
 #include <syslog.h>
+#include <pcap.h>
 #include "connection.h"
 #include "error.h"
 
@@ -52,7 +53,7 @@ ODBC::Connection::Connection(const std::string & s) :
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
 	}
 
-	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC2, 0);
+	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
 	if ((dberr != SQL_SUCCESS)) {
 		throw Error(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
 	}
@@ -169,5 +170,28 @@ bool
 ODBC::Connection::inTx() const
 {
 	return (txDepth > 0);
+}
+
+std::string
+ODBC::Connection::getAttrStr(SQLINTEGER attr) const
+{
+	unsigned char buf[BUFSIZ];
+	SQLINTEGER size = 0;
+	SQLINTEGER rc = SQLGetConnectAttr(conn, attr, buf, BUFSIZ, &size);
+	if (rc != SQL_SUCCESS) {
+		throw ODBC::Error(rc, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+	}
+	return std::string((const char *)buf, size);
+}
+
+SQLINTEGER
+ODBC::Connection::getAttrInt(SQLINTEGER attr) const
+{
+	SQLINTEGER result;
+	SQLINTEGER rc = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
+	if (rc != SQL_SUCCESS) {
+		throw ODBC::Error(rc, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+	}
+	return result;
 }
 
