@@ -2,6 +2,7 @@
 #define CONNECTION_H
 
 #include "dsn.h"
+#include "error.h"
 #include <sql.h>
 
 namespace ODBC {
@@ -25,6 +26,13 @@ namespace ODBC {
 		private:
 			mutable unsigned int	txDepth;
 			mutable bool			txAborted;
+	};
+	class ConnectionError : public Error {
+		public:
+			ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * stage);
+			ConnectionError(const ConnectionError &);
+
+			const time_t FailureTime;
 	};
 }
 

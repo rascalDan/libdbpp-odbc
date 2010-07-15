@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <syslog.h>
 #include <malloc.h>
+#include <time.h>
 #include "error.h"
 
 static
@@ -69,7 +70,7 @@ ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char c
     va_list ap;
 
     va_start(ap, action);
-    	odbc_verror(err, handletype, handle, action, ap, &msg);
+	odbc_verror(err, handletype, handle, action, ap, &msg);
 	va_end(ap);
 }
 
@@ -83,6 +84,10 @@ ODBC::Error::Error(char const * action, ...)
 		msg = NULL;
 	}
     va_end(ap);
+}
+
+ODBC::Error::Error(char * m) : msg(m)
+{
 }
 
 ODBC::Error::~Error() throw()

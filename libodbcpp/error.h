@@ -2,6 +2,7 @@
 #define ODBC_ERROR_H
 
 #include <sql.h>
+#include <stdlib.h>
 #include <exception>
 
 namespace ODBC {
@@ -14,6 +15,8 @@ namespace ODBC {
 			~Error() throw();
 
 			const char * what() const throw();
+		protected:
+			Error(char * msg);
 		private:
 			char * msg;
 	};
