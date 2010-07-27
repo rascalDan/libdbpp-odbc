@@ -142,7 +142,7 @@ namespace ODBC {
 	Glib::ustring
 	_Column<SQLCHAR*>::compose() const
 	{
-		return Glib::ustring::compose("%1", value);
+		return Glib::ustring((const char *)value);
 	}
 	template <>
 	Glib::ustring
