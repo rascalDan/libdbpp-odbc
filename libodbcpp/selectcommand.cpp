@@ -34,6 +34,10 @@ ODBC::SelectCommand::fetch()
 	RETCODE rc = SQLFetch(hStmt);
 	switch (rc) {
 		case SQL_SUCCESS:
+			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+				delete (*i)->composeCache;
+				(*i)->composeCache = NULL;
+			}
 			return true;
 		case SQL_NO_DATA:
 			return false;

@@ -7,12 +7,14 @@
 ODBC::Column::Column(const Glib::ustring & n, unsigned int i) :
 	colNo(i),
 	name(n),
+	composeCache(NULL),
 	bindSize(0)
 {
 }
 
 ODBC::Column::~Column()
 {
+	delete composeCache;
 }
 
 bool
@@ -91,10 +93,13 @@ namespace ODBC {
 		return writeToBuf(buf, "%g");
 	}
 	template <>
-	Glib::ustring
+	const Glib::ustring &
 	_Column<SQLDOUBLE>::compose() const
 	{
-		return Glib::ustring::compose("%1", value);
+		if (!composeCache) {
+			composeCache = new Glib::ustring(Glib::ustring::compose("%1", value));
+		}
+		return *composeCache;
 	}
 	template <>
 	Glib::ustring
@@ -115,10 +120,13 @@ namespace ODBC {
 		return writeToBuf(buf, "%ld");
 	}
 	template <>
-	Glib::ustring
+	const Glib::ustring &
 	_Column<SQLINTEGER>::compose() const
 	{
-		return Glib::ustring::compose("%1", value);
+		if (!composeCache) {
+			composeCache = new Glib::ustring(Glib::ustring::compose("%1", value));
+		}
+		return *composeCache;
 	}
 	template <>
 	Glib::ustring
@@ -139,10 +147,13 @@ namespace ODBC {
 		return writeToBuf(buf, "%s");
 	}
 	template <>
-	Glib::ustring
+	const Glib::ustring &
 	_Column<SQLCHAR*>::compose() const
 	{
-		return Glib::ustring((const char *)value);
+		if (!composeCache) {
+			composeCache = new Glib::ustring((const char *)value);
+		}
+		return *composeCache;
 	}
 	template <>
 	Glib::ustring
@@ -176,10 +187,13 @@ namespace ODBC {
 		return Glib::ustring(buf, len);
 	}
 	template <>
-	Glib::ustring
+	const Glib::ustring &
 	_Column<SQL_TIMESTAMP_STRUCT>::compose() const
 	{
-		return compose("%F %T");
+		if (!composeCache) {
+			composeCache = new Glib::ustring(Glib::ustring(compose("%F %T")));
+		}
+		return *composeCache;
 	}
 }
 
