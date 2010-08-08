@@ -18,7 +18,10 @@ ODBC::ModifyCommand::execute(bool anc)
 	}
 	RETCODE rc = SQLExecute(hStmt); 
     if (rc != SQL_SUCCESS) {
-		if (rc != SQL_NO_DATA || !anc) {
+		if (rc == SQL_SUCCESS_WITH_INFO) {
+			// Log info
+		}
+		else if (rc != SQL_NO_DATA || !anc) {
 			connection.abortTx();
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLExecute",
 					__FUNCTION__);
