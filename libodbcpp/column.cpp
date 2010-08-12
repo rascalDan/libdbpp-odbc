@@ -77,7 +77,7 @@ namespace ODBC {
 	REBIND(SQL_TIMESTAMP_STRUCT, bindParamT)
 	template<> void _Column<unsigned char *>::rebind(Command * cmd, unsigned int col) const \
 	{
-		cmd->bindParamS(col, (char *)value);
+		cmd->bindParamS(col, (const char *)value);
 	}
 
 	template <>

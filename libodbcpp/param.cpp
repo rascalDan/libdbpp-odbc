@@ -118,7 +118,7 @@ ODBC::Command::bindParamS(unsigned int i, const char * val, size_t len)
 {
 	if (i < params.size()) {
 		_Param<Glib::ustring>* p = Param::makeParam<Glib::ustring>(params[i]);
-		p->value.assign(val, len);
+		p->value.assign(val);
 		p->bindLen = len;
 		p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value.data(), p->value.bytes());
 		return;
