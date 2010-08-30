@@ -31,10 +31,10 @@ ODBC::Param::makeParam(ODBC::Param*& p)
 
 void
 ODBC::Param::bind(SQLHANDLE hStmt, SQLUINTEGER col, SQLSMALLINT ctype, SQLSMALLINT stype,
-		SQLINTEGER colsize, SQLINTEGER dp, const void* value, size_t buflen)
+		SQLINTEGER colsize, SQLINTEGER dp, const void * value, size_t buflen)
 {
 	RETCODE rc = SQLBindParameter(hStmt, col, SQL_PARAM_INPUT, ctype, stype,
-			colsize, dp, (void*)value, buflen, &bindLen);
+			colsize, dp, const_cast<void*>(value), buflen, &bindLen);
 	if (rc != SQL_SUCCESS) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: Bind for column %lu",
 				__FUNCTION__, col);
@@ -114,18 +114,6 @@ ODBC::Command::bindParamS(unsigned int i, const Glib::ustring & val)
 	throw Error("%s: Bind out of bounds", __FUNCTION__);
 }
 void
-ODBC::Command::bindParamS(unsigned int i, const char * val, size_t len)
-{
-	if (i < params.size()) {
-		_Param<Glib::ustring>* p = Param::makeParam<Glib::ustring>(params[i]);
-		p->value.assign(val);
-		p->bindLen = len;
-		p->bind(this->hStmt, i + 1, SQL_C_CHAR, SQL_CHAR, 0, 0, p->value.data(), p->value.bytes());
-		return;
-	}
-	throw Error("%s: Bind out of bounds", __FUNCTION__);
-}
-void
 ODBC::Command::bindParamT(unsigned int i, const struct tm * val)
 {
 	if (i < params.size()) {
@@ -169,16 +157,6 @@ void
 ODBC::Command::bindParamI(unsigned int i, unsigned int val)
 {
 	bindParamI(i, (long long unsigned int)val);
-}
-void
-ODBC::Command::bindParamS(unsigned int i, const char * val)
-{
-	bindParamS(i, val, strlen(val));
-}
-void
-ODBC::Command::bindParamS(unsigned int i, const std::string & val)
-{
-	bindParamS(i, val.c_str(), val.length());
 }
 void
 ODBC::Command::bindParamF(unsigned int i, float val)

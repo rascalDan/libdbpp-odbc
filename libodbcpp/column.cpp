@@ -34,7 +34,6 @@ ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, long long);
 ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, int);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, double);
 ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, float);
-ODBC_DEFAULT_COLUMN_CAST(SQLCHAR*, const unsigned char *);
 ODBC::Column::operator Glib::ustring() const {
 	return Glib::ustring((const char *)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value));
 }
@@ -75,11 +74,13 @@ namespace ODBC {
 	REBIND(double, bindParamF)
 	REBIND(float, bindParamF)
 	REBIND(SQL_TIMESTAMP_STRUCT, bindParamT)
-	template<> void _Column<unsigned char *>::rebind(Command * cmd, unsigned int col) const \
-	{
-		cmd->bindParamS(col, (const char *)value);
-	}
 
+	template<>
+	void
+	_Column<SQLCHARVEC>::rebind(Command * cmd, unsigned int col) const \
+	{
+		cmd->bindParamS(col, &value[0]);
+	}
 	template <>
 	int
 	_Column<SQLDOUBLE>::writeToBuf(char ** buf, const char * fmt) const
@@ -136,30 +137,30 @@ namespace ODBC {
 	}
 	template <>
 	int
-	_Column<SQLCHAR*>::writeToBuf(char ** buf, const char * fmt) const
+	_Column<SQLCHARVEC>::writeToBuf(char ** buf, const char * fmt) const
 	{
-		return asprintf(buf, fmt, value);
+		return asprintf(buf, fmt, &value[0]);
 	}
 	template <>
 	int
-	_Column<SQLCHAR*>::writeToBuf(char ** buf) const
+	_Column<SQLCHARVEC>::writeToBuf(char ** buf) const
 	{
 		return writeToBuf(buf, "%s");
 	}
 	template <>
 	const Glib::ustring &
-	_Column<SQLCHAR*>::compose() const
+	_Column<SQLCHARVEC>::compose() const
 	{
 		if (!composeCache) {
-			composeCache = new Glib::ustring((const char *)value);
+			composeCache = new Glib::ustring((const char *)&value[0]);
 		}
 		return *composeCache;
 	}
 	template <>
 	Glib::ustring
-	_Column<SQLCHAR*>::compose(const Glib::ustring & fmt) const
+	_Column<SQLCHARVEC>::compose(const Glib::ustring & fmt) const
 	{
-		return Glib::ustring::compose(fmt, value);
+		return Glib::ustring::compose(fmt, &value[0]);
 	}
 	template <>
 	int

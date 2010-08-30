@@ -2,6 +2,7 @@
 #define ODBC_BIND_H
 
 #include <sql.h>
+#include <vector>
 
 namespace ODBC {
 	class Command;
@@ -19,13 +20,14 @@ namespace ODBC {
 	class Bind {
 		public:
 			virtual			~Bind() {}
-			t				value;
+			mutable t		value;
 	};
+	typedef std::vector<char> SQLCHARVEC;
 	template <>
-	class Bind<unsigned char*> {
+	class Bind<SQLCHARVEC> {
 		public:
-			virtual			~Bind();
-			unsigned char *	value;
+			virtual			~Bind() {}
+			mutable SQLCHARVEC	value;
 	};
 }
 

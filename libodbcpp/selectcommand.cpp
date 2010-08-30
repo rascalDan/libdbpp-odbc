@@ -87,9 +87,9 @@ ODBC::SelectCommand::execute()
 			case SQL_VARCHAR:
 			case SQL_LONGVARCHAR:
 				{
-					_Column<SQLCHAR*>* s = new _Column<SQLCHAR*>(colName, col);
-					s->value = new SQLCHAR[bindSize + 1];
-					s->bind(hStmt, sqlcol, SQL_C_CHAR, s->value, bindSize + 1);
+					_Column<SQLCHARVEC>* s = new _Column<SQLCHARVEC>(colName, col);
+					s->value.resize(bindSize + 1);
+					s->bind(hStmt, sqlcol, SQL_C_CHAR, &s->value[0], bindSize + 1);
 					columns[col] = s;
 					break;
 				}

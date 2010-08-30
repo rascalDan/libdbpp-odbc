@@ -18,12 +18,12 @@ namespace ODBC {
 			void				bindParamI(unsigned int i, unsigned int val);
 			void				bindParamI(unsigned int i, long unsigned int val);
 			void				bindParamI(unsigned int i, long long unsigned int val);
+
 			void				bindParamF(unsigned int i, double val);
 			void				bindParamF(unsigned int i, float val);
-			void				bindParamS(unsigned int i, const char *);
-			void				bindParamS(unsigned int i, const char *, size_t);
-			void				bindParamS(unsigned int i, const std::string &);
+
 			void				bindParamS(unsigned int i, const Glib::ustring &);
+
 			void				bindParamT(unsigned int i, const struct tm *);
 			void				bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT &);
 			void				bindParamT(unsigned int i, time_t);

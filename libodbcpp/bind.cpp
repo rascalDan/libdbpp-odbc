@@ -7,11 +7,4 @@ ODBC::BindBase::BindBase() :
 {
 }
 
-ODBC::Bind<unsigned char *>::~Bind()
-{
-	if (value) {
-		delete[] value;
-	}
-}
-
 
