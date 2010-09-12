@@ -1,6 +1,6 @@
 #include <sqlext.h>
 #include <syslog.h>
-#include <pcap.h>
+#include <stdio.h>
 #include <string.h>
 #include "connection.h"
 #include "error.h"
