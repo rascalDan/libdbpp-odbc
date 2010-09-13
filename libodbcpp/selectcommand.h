@@ -10,7 +10,7 @@ namespace ODBC {
 		public:
 			SelectCommand (const Connection &, const std::string & sql);
 			~SelectCommand();
-			bool				fetch();
+			bool				fetch(SQLSMALLINT orientation = SQL_FETCH_NEXT, SQLLEN offset = 0);
 			const Column &		operator[](unsigned int col) const;
 			const Column &		operator[](const Glib::ustring &) const;
 			unsigned int		columnCount() const;

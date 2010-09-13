@@ -11,7 +11,7 @@ namespace ODBC {
 			BindBase();
 			virtual			~BindBase() {}
 		protected:
-			SQLINTEGER		bindLen;			// Used memory
+			SQLLEN			bindLen;			// Used memory
 			friend class Param;
 			friend class Column;
 			friend class Command;
@@ -23,12 +23,6 @@ namespace ODBC {
 			mutable t		value;
 	};
 	typedef std::vector<char> SQLCHARVEC;
-	template <>
-	class Bind<SQLCHARVEC> {
-		public:
-			virtual			~Bind() {}
-			mutable SQLCHARVEC	value;
-	};
 }
 
 #endif

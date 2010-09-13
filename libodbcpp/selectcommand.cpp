@@ -3,6 +3,7 @@
 #include "column.h"
 #include <sqlext.h>
 #include <stdio.h>
+#include <string.h>
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
 	Command(c, s)
@@ -26,12 +27,12 @@ ODBC::SelectCommand::~SelectCommand()
 }
 
 bool
-ODBC::SelectCommand::fetch()
+ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
 	if (columns.size() == 0) {
 		execute();
 	}
-	RETCODE rc = SQLFetch(hStmt);
+	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
 	switch (rc) {
 		case SQL_SUCCESS:
 			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
@@ -42,6 +43,18 @@ ODBC::SelectCommand::fetch()
 		case SQL_NO_DATA:
 			return false;
 		default:
+			{
+				SQLCHAR sqlstatus[5];
+				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
+				if (SQL_SUCCEEDED(diagrc)) {
+					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
+						for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+							(*i)->resize(hStmt);
+						}
+						return fetch(SQL_FETCH_RELATIVE, 0);
+					}
+				}
+			}
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLFetch",
 					__FUNCTION__);
 	}
@@ -87,7 +100,7 @@ ODBC::SelectCommand::execute()
 			case SQL_VARCHAR:
 			case SQL_LONGVARCHAR:
 				{
-					_Column<SQLCHARVEC>* s = new _Column<SQLCHARVEC>(colName, col);
+					StringColumn* s = new StringColumn(colName, col);
 					s->value.resize(bindSize + 1);
 					s->bind(hStmt, sqlcol, SQL_C_CHAR, &s->value[0], bindSize + 1);
 					columns[col] = s;

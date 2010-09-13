@@ -24,6 +24,8 @@ namespace ODBC {
 			SQLINTEGER		getAttrInt(SQLINTEGER) const;
 
 		private:
+			void			connectPre();
+			void			connectPost();
 			mutable unsigned int	txDepth;
 			mutable bool			txAborted;
 	};

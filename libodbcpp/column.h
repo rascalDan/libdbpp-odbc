@@ -10,6 +10,7 @@ namespace ODBC {
 			Column(const Glib::ustring &, unsigned int);
 			virtual			~Column();
 			void			bind(SQLHANDLE, SQLUINTEGER, SQLSMALLINT, void*, size_t);
+			virtual void	resize(SQLHANDLE);
 			operator int () const;
 			operator unsigned int () const;
 			operator long long () const;
@@ -32,8 +33,7 @@ namespace ODBC {
 			const Glib::ustring		name;
 		protected:
 			mutable Glib::ustring * composeCache;
-		private:
-			SQLUINTEGER		bindSize;			// Allocated memory
+			SQLLEN			bindSize;			// Allocated memory
 			friend class SelectCommand;
 	};
 	template <class t>
@@ -46,6 +46,12 @@ namespace ODBC {
 			Glib::ustring	compose(const Glib::ustring & fmt) const;
 			int				writeToBuf(char ** buf) const;
 			int				writeToBuf(char ** buf, const char * fmt) const;
+	};
+	class StringColumn : public _Column<SQLCHARVEC> {
+		public:
+			StringColumn(const Glib::ustring & n, unsigned int i) :
+				_Column<SQLCHARVEC>(n, i) { }
+			void resize(SQLHANDLE);
 	};
 }
 

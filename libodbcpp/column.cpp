@@ -1,3 +1,4 @@
+#include <sqlext.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "column.h"
@@ -15,6 +16,21 @@ ODBC::Column::Column(const Glib::ustring & n, unsigned int i) :
 ODBC::Column::~Column()
 {
 	delete composeCache;
+}
+
+void
+ODBC::Column::resize(SQLHANDLE hStmt)
+{
+}
+
+void
+ODBC::StringColumn::resize(SQLHANDLE hStmt)
+{
+	if (bindSize < bindLen) {
+		value.resize(bindLen + 1);
+		bindSize = bindLen;
+		bind(hStmt, colNo + 1, SQL_C_CHAR, &value[0], bindSize + 1);
+	}
 }
 
 bool

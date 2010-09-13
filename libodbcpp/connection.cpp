@@ -11,43 +11,17 @@ ODBC::Connection::Connection(const DSN& d) :
 	txDepth(0),
 	txAborted(false)
 {
-	SQLRETURN dberr = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
-	}
-
-	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
-	}
-
-	dberr = SQLAllocHandle(SQL_HANDLE_DBC, env, &conn);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate DBC handle");
-	}
-
-	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
-	}
-
-	dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
+	connectPre();
+	RETCODE dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
 			(SQLCHAR*)d.username.c_str(), SQL_NTS, (SQLCHAR*)d.password.c_str(), SQL_NTS);
 	if ((dberr != SQL_SUCCESS)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}
-
-	dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
-	}
+	connectPost();
 }
 
-ODBC::Connection::Connection(const std::string & s) :
-	env(0),
-	conn(0),
-	txDepth(0),
-	txAborted(false)
+void
+ODBC::Connection::connectPre()
 {
 	SQLRETURN dberr = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 	if ((dberr != SQL_SUCCESS)) {
@@ -68,16 +42,29 @@ ODBC::Connection::Connection(const std::string & s) :
 	if ((dberr != SQL_SUCCESS)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
 	}
+}
 
-	dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-	if ((dberr != SQL_SUCCESS)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
-	}
-
-	dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
+void
+ODBC::Connection::connectPost()
+{
+	RETCODE dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
 	if ((dberr != SQL_SUCCESS)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
 	}
+}
+
+ODBC::Connection::Connection(const std::string & s) :
+	env(0),
+	conn(0),
+	txDepth(0),
+	txAborted(false)
+{
+	connectPre();
+	RETCODE dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
+	if ((dberr != SQL_SUCCESS)) {
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
+	}
+	connectPost();
 }
 
 ODBC::Connection::~Connection()
