@@ -28,15 +28,12 @@ ODBC::Column::resize(SQLHANDLE hStmt)
 void
 ODBC::CharArrayColumn::resize(SQLHANDLE hStmt)
 {
-	const char * addr = &data.front();
 	if (bindLen > SQLLEN(data.size())) {
 		data.resize(bindLen + 1);
-		if (addr != &data.front()) {
-			Column::bind();
-			if (paramCmd) {
-				paramBound = false;
-				Param::bind();
-			}
+		Column::bind();
+		if (paramCmd) {
+			paramBound = false;
+			Param::bind();
 		}
 	}
 }
