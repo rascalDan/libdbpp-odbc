@@ -15,9 +15,10 @@ namespace ODBC {
 
 			void				bindParamI(unsigned int i, int val);
 			void				bindParamI(unsigned int i, long val);
+			void				bindParamI(unsigned int i, long long val);
 			void				bindParamI(unsigned int i, unsigned int val);
-			void				bindParamI(unsigned int i, long unsigned int val);
-			void				bindParamI(unsigned int i, long long unsigned int val);
+			void				bindParamI(unsigned int i, unsigned long int val);
+			void				bindParamI(unsigned int i, unsigned long long int val);
 
 			void				bindParamF(unsigned int i, double val);
 			void				bindParamF(unsigned int i, float val);
@@ -30,11 +31,16 @@ namespace ODBC {
 
 			const std::string	sql;
 		protected:
-			friend class BindBase;
+			friend class Param;
+			friend class Column;
 			SQLHSTMT        	hStmt;
 			const Connection&	connection;
 		private:
 			Params				params;
+
+			template <class ParamType>
+				ParamType *
+				makeParam(unsigned int idx);
 	};
 
 }

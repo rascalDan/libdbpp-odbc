@@ -5,25 +5,20 @@
 #include <vector>
 
 namespace ODBC {
-	class Command;
-	class BindBase {
-		public:
-			BindBase();
-			virtual			~BindBase() {}
-		protected:
-			SQLLEN			bindLen;			// Used memory
-			friend class Param;
-			friend class Column;
-			friend class Command;
-	};
-	template <class t>
 	class Bind {
 		public:
-			virtual			~Bind() {}
-			mutable t		value;
+			Bind();
+			virtual	~Bind() = 0;
+
+			virtual SQLSMALLINT ctype() const = 0; // The C type ID
+			virtual SQLINTEGER size() const = 0; // The size of the data
+		protected:
+			mutable SQLLEN bindLen;	// How much data the driver wants to store
 	};
-	typedef std::vector<char> SQLCHARVEC;
 }
+
+void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm &);
+void operator << (struct tm &, const SQL_TIMESTAMP_STRUCT & target);
 
 #endif
 

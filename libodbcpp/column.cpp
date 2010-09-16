@@ -3,14 +3,16 @@
 #include <stdlib.h>
 #include "column.h"
 #include "command.h"
+#include "selectcommand.h"
 #include "error.h"
 
-ODBC::Column::Column(const Glib::ustring & n, unsigned int i) :
+ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 	colNo(i),
 	name(n),
-	composeCache(NULL),
-	bindSize(0)
+	selectCmd(sc),
+	composeCache(NULL)
 {
+	bindLen = 0;
 }
 
 ODBC::Column::~Column()
@@ -24,13 +26,26 @@ ODBC::Column::resize(SQLHANDLE hStmt)
 }
 
 void
-ODBC::StringColumn::resize(SQLHANDLE hStmt)
+ODBC::CharArrayColumn::resize(SQLHANDLE hStmt)
 {
-	if (bindSize < bindLen) {
-		value.resize(bindLen + 1);
-		bindSize = bindLen;
-		bind(hStmt, colNo + 1, SQL_C_CHAR, &value[0], bindSize + 1);
+	const char * addr = &data.front();
+	if (bindLen > SQLLEN(data.size())) {
+		data.resize(bindLen + 1);
+		if (addr != &data.front()) {
+			Column::bind();
+			if (paramCmd) {
+				paramBound = false;
+				Param::bind();
+			}
+		}
 	}
+}
+
+void
+ODBC::Column::onScroll()
+{
+	delete composeCache;
+	composeCache = NULL;
 }
 
 bool
@@ -39,181 +54,112 @@ ODBC::Column::isNull() const
 	return (bindLen == SQL_NULL_DATA);
 }
 
-#define ODBC_DEFAULT_COLUMN_CAST(ctype, rtype) \
-	ODBC::Column::operator rtype() const { \
-		return (dynamic_cast<const _Column<ctype>& >(*this)).value; \
-	}
-
-ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, unsigned int);
-ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, unsigned long long);
-ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, long long);
-ODBC_DEFAULT_COLUMN_CAST(SQLINTEGER, int);
-ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, double);
-ODBC_DEFAULT_COLUMN_CAST(SQLDOUBLE, float);
-ODBC::Column::operator Glib::ustring() const {
-	return Glib::ustring((const char *)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value));
-}
-ODBC::Column::operator std::string() const {
-	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
-}
-ODBC::Column::operator const char * () const {
-	return (const char*)((dynamic_cast<const _Column<SQLCHAR*>& >(*this)).value);
-}
-ODBC::Column::operator struct tm () const {
-	const _Column<SQL_TIMESTAMP_STRUCT>& c = dynamic_cast<const _Column<SQL_TIMESTAMP_STRUCT>& >(*this);
-	struct tm rtn;
-	rtn << c.value;
-	return rtn;
+void
+ODBC::Column::rebind(Command * cmd, unsigned int idx) const
+{
+	meAsAParam()->paramCmd = cmd;
+	meAsAParam()->paramIdx = idx;
+	meAsAParam()->bind();
 }
 
 void
-ODBC::Column::bind(SQLHANDLE hStmt, SQLUINTEGER col, SQLSMALLINT ctype, void * buf, size_t size)
+ODBC::Column::bind()
 {
-	bindSize = size;
-	RETCODE rc = SQLBindCol(hStmt, col, ctype, buf, bindSize, &bindLen);
+	RETCODE rc = SQLBindCol(selectCmd->hStmt, colNo + 1, ctype(), rwDataAddress(), size(), &bindLen);
 	if (rc != SQL_SUCCESS) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: Bind column %lu", __FUNCTION__, col);
+		throw Error(rc, SQL_HANDLE_STMT, selectCmd->hStmt, "%s: Bind column %u", __FUNCTION__, colNo);
 	}
 }
 
-#define REBIND(t, p) \
-	template<> void _Column<t>::rebind(Command * cmd, unsigned int col) const \
+#define SIMPLEFORMATTER(ctype, deffmtstr) \
+	int \
+	ODBC::ctype::writeToBuf(char ** buf, const char * fmt) const \
 	{ \
-		cmd->p(col, value); \
+		return asprintf(buf, fmt, data); \
+	} \
+	int \
+	ODBC::ctype::writeToBuf(char ** buf) const \
+	{ \
+		return writeToBuf(buf, deffmtstr); \
+	} \
+	const Glib::ustring & \
+	ODBC::ctype::compose() const \
+	{ \
+		if (!composeCache) { \
+			composeCache = new Glib::ustring(Glib::ustring::compose("%1", data)); \
+		} \
+		return *composeCache; \
+	} \
+	Glib::ustring \
+	ODBC::ctype::compose(const Glib::ustring & fmt) const \
+	{ \
+		return Glib::ustring::compose(fmt, data); \
 	}
-namespace ODBC {
-	REBIND(int, bindParamI)
-	REBIND(long, bindParamI)
-	REBIND(unsigned int, bindParamI)
-	REBIND(long unsigned int, bindParamI)
-	REBIND(long long unsigned int, bindParamI)
-	REBIND(double, bindParamF)
-	REBIND(float, bindParamF)
-	REBIND(SQL_TIMESTAMP_STRUCT, bindParamT)
+SIMPLEFORMATTER(FloatingPointColumn, "%g");
+SIMPLEFORMATTER(SignedIntegerColumn, "%ld");
+#ifdef COMPLETENESS
+SIMPLEFORMATTER(UnsignedIntegerColumn, "%lu");
+#endif
 
-	template<>
-	void
-	_Column<SQLCHARVEC>::rebind(Command * cmd, unsigned int col) const \
-	{
-		cmd->bindParamS(col, &value[0]);
-	}
-	template <>
-	int
-	_Column<SQLDOUBLE>::writeToBuf(char ** buf, const char * fmt) const
-	{
-		return asprintf(buf, fmt, value);
-	}
-	template <>
-	int
-	_Column<SQLDOUBLE>::writeToBuf(char ** buf) const
-	{
-		return writeToBuf(buf, "%g");
-	}
-	template <>
-	const Glib::ustring &
-	_Column<SQLDOUBLE>::compose() const
-	{
-		if (!composeCache) {
-			composeCache = new Glib::ustring(Glib::ustring::compose("%1", value));
-		}
-		return *composeCache;
-	}
-	template <>
-	Glib::ustring
-	_Column<SQLDOUBLE>::compose(const Glib::ustring & fmt) const
-	{
-		return Glib::ustring::compose(fmt, value);
-	}
-	template <>
-	int
-	_Column<SQLINTEGER>::writeToBuf(char ** buf, const char * fmt) const
-	{
-		return asprintf(buf, fmt, value);
-	}
-	template <>
-	int
-	_Column<SQLINTEGER>::writeToBuf(char ** buf) const
-	{
-		return writeToBuf(buf, "%ld");
-	}
-	template <>
-	const Glib::ustring &
-	_Column<SQLINTEGER>::compose() const
-	{
-		if (!composeCache) {
-			composeCache = new Glib::ustring(Glib::ustring::compose("%1", value));
-		}
-		return *composeCache;
-	}
-	template <>
-	Glib::ustring
-	_Column<SQLINTEGER>::compose(const Glib::ustring & fmt) const
-	{
-		return Glib::ustring::compose(fmt, value);
-	}
-	template <>
-	int
-	_Column<SQLCHARVEC>::writeToBuf(char ** buf, const char * fmt) const
-	{
-		return asprintf(buf, fmt, &value[0]);
-	}
-	template <>
-	int
-	_Column<SQLCHARVEC>::writeToBuf(char ** buf) const
-	{
-		return writeToBuf(buf, "%s");
-	}
-	template <>
-	const Glib::ustring &
-	_Column<SQLCHARVEC>::compose() const
-	{
-		if (!composeCache) {
-			composeCache = new Glib::ustring((const char *)&value[0]);
-		}
-		return *composeCache;
-	}
-	template <>
-	Glib::ustring
-	_Column<SQLCHARVEC>::compose(const Glib::ustring & fmt) const
-	{
-		return Glib::ustring::compose(fmt, &value[0]);
-	}
-	template <>
-	int
-	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf, const char * fmt) const
-	{
-		*buf = (char *)malloc(300);
-		struct tm t;
-		t << value;
-		return strftime(*buf, 300, fmt, &t);
-	}
-	template <>
-	int
-	_Column<SQL_TIMESTAMP_STRUCT>::writeToBuf(char ** buf) const
-	{
-		return writeToBuf(buf, "%F %T");
-	}
-	template <>
-	Glib::ustring
-	_Column<SQL_TIMESTAMP_STRUCT>::compose(const Glib::ustring & fmt) const
-	{
-		char buf[300];
-		struct tm t;
-		t << value;
-		int len = strftime(buf, sizeof(buf), fmt.c_str(), &t);
-		return Glib::ustring(buf, len);
-	}
-	template <>
-	const Glib::ustring &
-	_Column<SQL_TIMESTAMP_STRUCT>::compose() const
-	{
-		if (!composeCache) {
-			composeCache = new Glib::ustring(Glib::ustring(compose("%F %T")));
-		}
-		return *composeCache;
-	}
+int
+ODBC::CharArrayColumn::writeToBuf(char ** buf, const char * fmt) const
+{
+	return asprintf(buf, fmt, &data[0]);
 }
-
+int
+ODBC::CharArrayColumn::writeToBuf(char ** buf) const
+{
+	return writeToBuf(buf, "%s");
+}
+const Glib::ustring &
+ODBC::CharArrayColumn::compose() const
+{
+	if (!composeCache) {
+		composeCache = new Glib::ustring(data.begin(), data.end());
+	}
+	return *composeCache;
+}
+Glib::ustring
+ODBC::CharArrayColumn::compose(const Glib::ustring & fmt) const
+{
+	return Glib::ustring::compose(fmt, &data[0]);
+}
+int
+ODBC::TimeStampColumn::writeToBuf(char ** buf, const char * fmt) const
+{
+	*buf = (char *)malloc(300);
+	struct tm t;
+	t << data;
+	return strftime(*buf, 300, fmt, &t);
+}
+int
+ODBC::TimeStampColumn::writeToBuf(char ** buf) const
+{
+	return writeToBuf(buf, "%F %T");
+}
+Glib::ustring
+ODBC::TimeStampColumn::compose(const Glib::ustring & fmt) const
+{
+	char buf[300];
+	struct tm t;
+	t << data;
+	int len = strftime(buf, sizeof(buf), fmt.c_str(), &t);
+	return Glib::ustring(buf, len);
+}
+const Glib::ustring &
+ODBC::TimeStampColumn::compose() const
+{
+	if (!composeCache) {
+		composeCache = new Glib::ustring(Glib::ustring(compose("%F %T")));
+	}
+	return *composeCache;
+}
+ODBC::TimeStampColumn::operator tm() const
+{
+	struct tm t;
+	t << data;
+	return t;
+}
 void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm & src)
 {
 	target.year = src.tm_year + 1900;

@@ -1,9 +1,10 @@
-#include <sqlext.h>
-#include "command.h"
-#include "param.h"
+#include "bind.h"
 
-ODBC::BindBase::BindBase() :
-	bindLen(0)
+ODBC::Bind::Bind()
+{
+}
+
+ODBC::Bind::~Bind()
 {
 }
 

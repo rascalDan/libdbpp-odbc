@@ -36,8 +36,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 	switch (rc) {
 		case SQL_SUCCESS:
 			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
-				delete (*i)->composeCache;
-				(*i)->composeCache = NULL;
+				(*i)->onScroll();
 			}
 			return true;
 		case SQL_NO_DATA:
@@ -58,12 +57,6 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLFetch",
 					__FUNCTION__);
 	}
-}
-
-// This is here cos it needs to be referenced by (and only by) execute
-template <class t>
-ODBC::_Column<t>::_Column(const Glib::ustring & n, unsigned int i) : Column(n, i)
-{
 }
 
 void
@@ -100,10 +93,7 @@ ODBC::SelectCommand::execute()
 			case SQL_VARCHAR:
 			case SQL_LONGVARCHAR:
 				{
-					StringColumn* s = new StringColumn(colName, col);
-					s->value.resize(bindSize + 1);
-					s->bind(hStmt, sqlcol, SQL_C_CHAR, &s->value[0], bindSize + 1);
-					columns[col] = s;
+					columns[col] = new CharArrayColumn(this, colName, col);
 					break;
 				}
 			case SQL_DECIMAL:
@@ -112,9 +102,7 @@ ODBC::SelectCommand::execute()
 			case SQL_FLOAT:
 			case SQL_DOUBLE:
 				{
-					_Column<SQLDOUBLE>* d = new _Column<SQLDOUBLE>(colName, col);
-					d->bind(hStmt, sqlcol, SQL_C_DOUBLE, &d->value, sizeof(double));
-					columns[col] = d;
+					columns[col] = new FloatingPointColumn(this, colName, col);
 					break;
 				}
 			case SQL_SMALLINT:
@@ -122,9 +110,7 @@ ODBC::SelectCommand::execute()
 			case SQL_TINYINT:
 			case SQL_BIGINT:
 				{
-					_Column<SQLINTEGER>* i = new _Column<SQLINTEGER>(colName, col);
-					i->bind(hStmt, sqlcol, SQL_C_LONG, &i->value, sizeof(int));
-					columns[col] = i;
+					columns[col] = new SignedIntegerColumn(this, colName, col);
 					break;
 				}
 			case SQL_TIMESTAMP:
@@ -133,9 +119,7 @@ ODBC::SelectCommand::execute()
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
 				{
-					_Column<SQL_TIMESTAMP_STRUCT>* t = new _Column<SQL_TIMESTAMP_STRUCT>(colName, col);
-					t->bind(hStmt, sqlcol, SQL_C_TIMESTAMP, &t->value, sizeof(SQL_TIMESTAMP_STRUCT));
-					columns[col] = t;
+					columns[col] = new TimeStampColumn(this, colName, col);
 					break;
 				}
 			default:
@@ -144,6 +128,7 @@ ODBC::SelectCommand::execute()
 						__FUNCTION__, col, _colName, bindType, bindSize, dp, nullable);
 				break;
 		};
+		columns[col]->bind();
 	}
 }
 

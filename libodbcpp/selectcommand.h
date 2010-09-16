@@ -11,12 +11,12 @@ namespace ODBC {
 			SelectCommand (const Connection &, const std::string & sql);
 			~SelectCommand();
 			bool				fetch(SQLSMALLINT orientation = SQL_FETCH_NEXT, SQLLEN offset = 0);
+			void				execute();
 			const Column &		operator[](unsigned int col) const;
 			const Column &		operator[](const Glib::ustring &) const;
 			unsigned int		columnCount() const;
 			unsigned int		getOrdinal(const Glib::ustring &) const;
 		private:
-			void				execute();
 			Columns				columns;			
 	};
 }
