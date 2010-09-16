@@ -43,7 +43,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 			return false;
 		default:
 			{
-				SQLCHAR sqlstatus[5];
+				SQLCHAR sqlstatus[6];
 				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
