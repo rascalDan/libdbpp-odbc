@@ -115,14 +115,14 @@ const Glib::ustring &
 ODBC::CharArrayColumn::compose() const
 {
 	if (!composeCache) {
-		composeCache = new Glib::ustring(data.begin(), data.end());
+		composeCache = new Glib::ustring(&data.front(), bindLen);
 	}
 	return *composeCache;
 }
 Glib::ustring
 ODBC::CharArrayColumn::compose(const Glib::ustring & fmt) const
 {
-	return Glib::ustring::compose(fmt, &data[0]);
+	return Glib::ustring::compose(fmt, &data.front());
 }
 int
 ODBC::TimeStampColumn::writeToBuf(char ** buf, const char * fmt) const

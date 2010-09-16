@@ -67,8 +67,8 @@ namespace ODBC {
 			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
 			virtual int writeToBuf(char ** buf) const;
 			virtual int writeToBuf(char ** buf, const char * fmt) const;
-			virtual operator std::string () const { return std::string(data.begin(), data.end()); }
-			virtual operator Glib::ustring () const { return std::string(data.begin(), data.end()); }
+			virtual operator std::string () const { return std::string(&data.front(), bindLen); }
+			virtual operator Glib::ustring () const { return std::string(&data.front(), bindLen); }
 		protected:
 			virtual const Param * meAsAParam() const { return this; }
 			CharArray data;
