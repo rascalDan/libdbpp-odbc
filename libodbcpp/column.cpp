@@ -112,7 +112,7 @@ const Glib::ustring &
 ODBC::CharArrayColumn::compose() const
 {
 	if (!composeCache) {
-		composeCache = new Glib::ustring(&data.front(), bindLen);
+		composeCache = new Glib::ustring(&data.front(), &data[bindLen]);
 	}
 	return *composeCache;
 }
