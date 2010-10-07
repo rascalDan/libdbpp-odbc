@@ -2,5 +2,14 @@ alias glibmm : : : :
 	<cflags>"`pkg-config --cflags glibmm-2.4`"
 	<linkflags>"`pkg-config --libs glibmm-2.4`"
 	;
-lib odbcpp : glibmm [ glob *.cpp ] :
+
+project
+	: usage-requirements
+		<include>.
+	: requirements
+		<library>glibmm 
+	;
+
+lib odbcpp :
+	[ glob *.cpp ] :
 	<link>static ;
