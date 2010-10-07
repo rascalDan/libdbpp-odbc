@@ -12,4 +12,5 @@ project
 
 lib odbcpp :
 	[ glob *.cpp ] :
+	<cflags>-fPIC
 	<link>static ;
