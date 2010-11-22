@@ -6,7 +6,7 @@
 
 ODBC::Param::Param() :
 	paramCmd(NULL),
-	paramIdx(NULL),
+	paramIdx(0),
 	paramBound(false)
 {
 }
