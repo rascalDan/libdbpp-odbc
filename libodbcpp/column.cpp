@@ -28,7 +28,7 @@ ODBC::Column::resize(SQLHANDLE hStmt)
 void
 ODBC::CharArrayColumn::resize(SQLHANDLE hStmt)
 {
-	if (bindLen > SQLLEN(data.size())) {
+	if (bindLen >= SQLLEN(data.size())) {
 		data.resize(bindLen + 1);
 		Column::bind();
 		if (paramCmd) {
