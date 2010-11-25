@@ -63,7 +63,7 @@ void
 ODBC::Column::bind()
 {
 	RETCODE rc = SQLBindCol(selectCmd->hStmt, colNo + 1, ctype(), rwDataAddress(), size(), &bindLen);
-	if (rc != SQL_SUCCESS) {
+	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, selectCmd->hStmt, "%s: Bind column %u", __FUNCTION__, colNo);
 	}
 }

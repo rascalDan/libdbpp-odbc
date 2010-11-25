@@ -8,21 +8,21 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 	connection(c)
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);
-	if (rc != SQL_SUCCESS) {
+	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Allocate statement handle");
 	}
 	rc = SQLSetStmtAttr(hStmt, SQL_ATTR_CURSOR_TYPE, (SQLPOINTER)SQL_CURSOR_DYNAMIC, 0);
-	if ((rc != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(rc)) {
 		throw ConnectionError(rc, SQL_HANDLE_STMT, hStmt, "Set scrollable cursor");
 	}
     rc = SQLPrepare(hStmt, (SQLCHAR*)sql.c_str(), sql.length());
-    if (rc != SQL_SUCCESS) {
+    if (!SQL_SUCCEEDED(rc)) {
         SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Prepare statement");
     }
 	SQLSMALLINT pcount;
     rc = SQLNumParams(hStmt, &pcount);
-    if (rc != SQL_SUCCESS) {
+    if (!SQL_SUCCEEDED(rc)) {
         SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Parameter count");
     }

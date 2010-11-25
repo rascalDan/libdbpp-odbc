@@ -14,7 +14,7 @@ ODBC::Connection::Connection(const DSN& d) :
 	connectPre();
 	RETCODE dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
 			(SQLCHAR*)d.username.c_str(), SQL_NTS, (SQLCHAR*)d.password.c_str(), SQL_NTS);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}
 	connectPost();
@@ -24,22 +24,22 @@ void
 ODBC::Connection::connectPre()
 {
 	SQLRETURN dberr = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
 	}
 
 	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
 	}
 
 	dberr = SQLAllocHandle(SQL_HANDLE_DBC, env, &conn);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate DBC handle");
 	}
 
 	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
 	}
 }
@@ -48,7 +48,7 @@ void
 ODBC::Connection::connectPost()
 {
 	RETCODE dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
 	}
 }
@@ -61,7 +61,7 @@ ODBC::Connection::Connection(const std::string & s) :
 {
 	connectPre();
 	RETCODE dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-	if ((dberr != SQL_SUCCESS)) {
+	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
 	}
 	connectPost();
@@ -70,15 +70,15 @@ ODBC::Connection::Connection(const std::string & s) :
 ODBC::Connection::~Connection()
 {
 	if (conn) {
-		if (SQLDisconnect(conn) != SQL_SUCCESS) {
+		if (!SQL_SUCCEEDED(SQLDisconnect(conn))) {
 			syslog(LOG_WARNING, "%s: Disconnect error", __FUNCTION__);
 		}
-		if (SQLFreeHandle(SQL_HANDLE_DBC, conn) != SQL_SUCCESS) {
+		if (!SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_DBC, conn))) {
 			syslog(LOG_WARNING, "%s: Free connection handle error", __FUNCTION__);
 		}
 	}
 	if (env) {
-		if (SQLFreeHandle(SQL_HANDLE_ENV, env) != SQL_SUCCESS) {
+		if (!SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_ENV, env))) {
 			syslog(LOG_WARNING, "%s: Free connection handle error", __FUNCTION__);
 		}
 	}
@@ -89,7 +89,7 @@ ODBC::Connection::beginTx() const
 {
 	if (txDepth == 0) {
 		SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-		if ((dberr != SQL_SUCCESS)) {
+		if (!SQL_SUCCEEDED(dberr)) {
 			throw Error(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
 		}
 	}
@@ -107,11 +107,11 @@ ODBC::Connection::commitTx() const
 		txDepth -= 1;
 		if (txDepth == 0) {
 			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_COMMIT);
-			if ((dberr != SQL_SUCCESS)) {
+			if (!SQL_SUCCEEDED(dberr)) {
 				throw Error(dberr, SQL_HANDLE_DBC, conn, "SQLEndTran (SQL_COMMIT)");
 			}
 			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-			if ((dberr != SQL_SUCCESS)) {
+			if (!SQL_SUCCEEDED(dberr)) {
 				throw Error(dberr, SQL_HANDLE_DBC, conn, "Enable auto commit");
 			}
 			txAborted = false;
@@ -128,11 +128,11 @@ ODBC::Connection::rollbackTx() const
 		txDepth -= 1;
 		if (txDepth == 0) {
 			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_ROLLBACK);
-			if ((dberr != SQL_SUCCESS)) {
+			if (!SQL_SUCCEEDED(dberr)) {
 				throw Error(dberr, SQL_HANDLE_DBC, conn, "SQLEndTran (SQL_ROLLBACK)");
 			}
 			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-			if ((dberr != SQL_SUCCESS)) {
+			if (!SQL_SUCCEEDED(dberr)) {
 				throw Error(dberr, SQL_HANDLE_DBC, conn, "Enable auto commit");
 			}
 			txAborted = false;
@@ -163,22 +163,24 @@ ODBC::Connection::inTx() const
 std::string
 ODBC::Connection::getAttrStr(SQLINTEGER attr) const
 {
-	unsigned char buf[BUFSIZ];
+	std::string rtn;
+	rtn.resize(BUFSIZ);
 	SQLINTEGER size = 0;
-	SQLINTEGER rc = SQLGetConnectAttr(conn, attr, buf, BUFSIZ, &size);
-	if (rc != SQL_SUCCESS) {
-		throw ODBC::Error(rc, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, (unsigned char *)rtn.c_str(), BUFSIZ, &size);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
 	}
-	return std::string((const char *)buf, size);
+	rtn.resize(size);
+	return rtn;
 }
 
 SQLINTEGER
 ODBC::Connection::getAttrInt(SQLINTEGER attr) const
 {
 	SQLINTEGER result;
-	SQLINTEGER rc = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
-	if (rc != SQL_SUCCESS) {
-		throw ODBC::Error(rc, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
 	}
 	return result;
 }

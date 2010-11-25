@@ -47,7 +47,7 @@ ODBC::Param::bind() const
 	if (!paramBound) {
 		RETCODE rc = SQLBindParameter(paramCmd->hStmt, paramIdx + 1, SQL_PARAM_INPUT, ctype(), stype(),
 				size(), dp(), const_cast<void *>(dataAddress()), size(), &bindLen);
-		if (rc != SQL_SUCCESS) {
+		if (!SQL_SUCCEEDED(rc)) {
 			throw Error(rc, SQL_HANDLE_STMT, paramCmd->hStmt, "%s: Bind for parameter %u",
 					__FUNCTION__, paramIdx);
 		}

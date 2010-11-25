@@ -18,8 +18,8 @@ ODBC::SelectCommand::~SelectCommand()
 		}
 	}
 	if (columns.size()) {
-		RETCODE rc;
-		if ((rc = SQLCloseCursor(hStmt)) != SQL_SUCCESS) {
+		RETCODE rc = SQLCloseCursor(hStmt);
+		if (!SQL_SUCCEEDED(rc)) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLCloseCursor",
 					__FUNCTION__);
 		}
@@ -35,6 +35,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
 	switch (rc) {
 		case SQL_SUCCESS:
+		case SQL_SUCCESS_WITH_INFO:
 			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
 				(*i)->onScroll();
 			}
@@ -63,15 +64,15 @@ void
 ODBC::SelectCommand::execute()
 {
 	RETCODE rc = SQLExecute(hStmt); 
-    if (rc != SQL_SUCCESS) {
+	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLExecute",
 				__FUNCTION__);
-    }
-    SQLSMALLINT colCount;
-    if ((rc = SQLNumResultCols(hStmt, &colCount)) != SQL_SUCCESS) {
-        throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLNumResultCols",
-                __FUNCTION__);
-    }
+	}
+	SQLSMALLINT colCount;
+	if (!SQL_SUCCEEDED(rc = SQLNumResultCols(hStmt, &colCount))) {
+		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLNumResultCols",
+				__FUNCTION__);
+	}
 	if (colCount < 1) {
 		throw Error("%s: No result columns", __FUNCTION__);
 	}
@@ -81,14 +82,15 @@ ODBC::SelectCommand::execute()
 		SQLSMALLINT nameLen, dp, nullable, bindType;
 		SQLUINTEGER bindSize;
 		int sqlcol = col + 1;
-		if ((rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
-					&bindSize, &dp, &nullable)) != SQL_SUCCESS) {
+		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
+						&bindSize, &dp, &nullable))) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLDescribeCol for %d",
 					__FUNCTION__, col);
 		}
 		Glib::ustring colName((const char *)_colName, nameLen);
 		switch (bindType) {
 			case -9:
+			case -10:
 			case SQL_CHAR:
 			case SQL_VARCHAR:
 			case SQL_LONGVARCHAR:

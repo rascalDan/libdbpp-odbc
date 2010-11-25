@@ -17,18 +17,16 @@ ODBC::ModifyCommand::execute(bool anc)
 		throw Error("Transaction has been aborted, not issuing any more commands");
 	}
 	RETCODE rc = SQLExecute(hStmt); 
-    if (rc != SQL_SUCCESS) {
-		if (rc == SQL_SUCCESS_WITH_INFO) {
-			// Log info
-		}
-		else if (rc != SQL_NO_DATA || !anc) {
+    if (!SQL_SUCCEEDED(rc)) {
+		if (rc != SQL_NO_DATA || !anc) {
 			connection.abortTx();
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLExecute",
 					__FUNCTION__);
 		}
     }
 	SQLINTEGER rows;
-	if ((rc = SQLRowCount(hStmt, &rows)) != SQL_SUCCESS) {
+	rc = SQLRowCount(hStmt, &rows);
+    if (!SQL_SUCCEEDED(rc)) {
 		connection.abortTx();
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLRowCount",
 				__FUNCTION__);
