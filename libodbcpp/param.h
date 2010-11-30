@@ -94,6 +94,16 @@ namespace ODBC {
 		protected:
 			SQL_TIMESTAMP_STRUCT data;
 	};
+	class NullParam : public Param {
+		public:
+			NullParam() : Param() { }
+			NullParam(Command * c, unsigned int i) : Param(c, i) { bindLen = SQL_NULL_DATA; }
+			virtual SQLSMALLINT ctype() const { return SQL_C_LONG; }
+			virtual SQLSMALLINT stype() const { return SQL_C_LONG; }
+			virtual SQLINTEGER size() const { return 0; }
+			virtual SQLINTEGER dp() const { return 0; }
+			virtual const void * dataAddress() const { return NULL; }
+	};
 }
 
 #endif

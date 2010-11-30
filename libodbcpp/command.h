@@ -29,6 +29,8 @@ namespace ODBC {
 			void				bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT &);
 			void				bindParamT(unsigned int i, time_t);
 
+			void				bindNull(unsigned int i);
+
 			const std::string	sql;
 		protected:
 			friend class Param;

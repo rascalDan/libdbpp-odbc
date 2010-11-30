@@ -80,6 +80,12 @@ SIMPLEBINDER(const SQL_TIMESTAMP_STRUCT &, TimeStampParam, T);
 SIMPLEBINDER(time_t, TimeStampParam, T);
 
 void
+ODBC::Command::bindNull(unsigned int i)
+{
+	makeParam<NullParam>(i)->bind();
+}
+
+void
 ODBC::GlibUstringParam::operator=(Glib::ustring const & d)
 {
 	const char * addr = data.data();
