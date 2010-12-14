@@ -89,45 +89,28 @@ ODBC::SelectCommand::execute()
 		}
 		Glib::ustring colName((const char *)_colName, nameLen);
 		switch (bindType) {
-			case -9:
-			case -10:
-			case SQL_CHAR:
-			case SQL_VARCHAR:
-			case SQL_LONGVARCHAR:
-				{
-					columns[col] = new CharArrayColumn(this, colName, col);
-					break;
-				}
 			case SQL_DECIMAL:
 			case SQL_NUMERIC:
 			case SQL_REAL:
 			case SQL_FLOAT:
 			case SQL_DOUBLE:
-				{
-					columns[col] = new FloatingPointColumn(this, colName, col);
-					break;
-				}
+				columns[col] = new FloatingPointColumn(this, colName, col);
+				break;
 			case SQL_SMALLINT:
 			case SQL_INTEGER:
 			case SQL_TINYINT:
 			case SQL_BIGINT:
-				{
-					columns[col] = new SignedIntegerColumn(this, colName, col);
-					break;
-				}
+				columns[col] = new SignedIntegerColumn(this, colName, col);
+				break;
 			case SQL_TIMESTAMP:
 			case SQL_DATETIME:
 			case SQL_TYPE_TIME:
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
-				{
-					columns[col] = new TimeStampColumn(this, colName, col);
-					break;
-				}
+				columns[col] = new TimeStampColumn(this, colName, col);
+				break;
 			default:
-				throw Error(
-						"%s: Bad column type: idx=%d, name=%s, type=%d, size=%ld, dp=%d, null=%d",
-						__FUNCTION__, col, _colName, bindType, bindSize, dp, nullable);
+				columns[col] = new CharArrayColumn(this, colName, col);
 				break;
 		};
 		columns[col]->bind();
