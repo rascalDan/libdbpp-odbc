@@ -24,7 +24,7 @@ ODBC::ModifyCommand::execute(bool anc)
 					__FUNCTION__);
 		}
     }
-	SQLINTEGER rows;
+	SQLLEN rows;
 	rc = SQLRowCount(hStmt, &rows);
     if (!SQL_SUCCEEDED(rc)) {
 		connection.abortTx();
