@@ -80,7 +80,7 @@ ODBC::SelectCommand::execute()
 	for (int col = 0; col < colCount; col++) {
 		SQLCHAR _colName[300];
 		SQLSMALLINT nameLen, dp, nullable, bindType;
-		SQLUINTEGER bindSize;
+		SQLULEN bindSize;
 		int sqlcol = col + 1;
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
 						&bindSize, &dp, &nullable))) {
