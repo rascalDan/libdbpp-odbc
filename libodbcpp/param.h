@@ -33,7 +33,7 @@ namespace ODBC {
 			SignedIntegerParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_LONG; }
 			virtual SQLSMALLINT stype() const { return SQL_C_LONG; }
-			virtual SQLINTEGER size() const { return sizeof(SQLINTEGER); }
+			virtual SQLULEN size() const { return sizeof(SQLINTEGER); }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return &data; }
 			void operator=(const SQLINTEGER & d) { data = d; }
@@ -46,7 +46,7 @@ namespace ODBC {
 			UnsignedIntegerParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_ULONG; }
 			virtual SQLSMALLINT stype() const { return SQL_C_ULONG; }
-			virtual SQLINTEGER size() const { return sizeof(SQLUINTEGER); }
+			virtual SQLULEN size() const { return sizeof(SQLUINTEGER); }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return &data; }
 			void operator=(const SQLUINTEGER & d) { data = d; }
@@ -59,7 +59,7 @@ namespace ODBC {
 			FloatingPointParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_DOUBLE; }
 			virtual SQLSMALLINT stype() const { return SQL_C_DOUBLE; }
-			virtual SQLINTEGER size() const { return sizeof(SQLDOUBLE); }
+			virtual SQLULEN size() const { return sizeof(SQLDOUBLE); }
 			virtual SQLINTEGER dp() const { return 10; }
 			virtual const void * dataAddress() const { return &data; }
 			void operator=(const SQLDOUBLE & d) { data = d; }
@@ -72,7 +72,7 @@ namespace ODBC {
 			GlibUstringParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_CHAR; }
 			virtual SQLSMALLINT stype() const { return SQL_CHAR; }
-			virtual SQLINTEGER size() const { return data.bytes(); }
+			virtual SQLULEN size() const { return data.bytes(); }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return data.data(); }
 			void operator=(const Glib::ustring & d);
@@ -85,7 +85,7 @@ namespace ODBC {
 			TimeStampParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_TYPE_TIMESTAMP; }
 			virtual SQLSMALLINT stype() const { return SQL_TYPE_TIMESTAMP; }
-			virtual SQLINTEGER size() const { return sizeof(SQL_TIMESTAMP_STRUCT); }
+			virtual SQLULEN size() const { return sizeof(SQL_TIMESTAMP_STRUCT); }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return &data; }
 			void operator=(const time_t & d);
@@ -100,7 +100,7 @@ namespace ODBC {
 			NullParam(Command * c, unsigned int i) : Param(c, i) { bindLen = SQL_NULL_DATA; }
 			virtual SQLSMALLINT ctype() const { return SQL_C_LONG; }
 			virtual SQLSMALLINT stype() const { return SQL_C_LONG; }
-			virtual SQLINTEGER size() const { return 0; }
+			virtual SQLULEN size() const { return 0; }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return NULL; }
 	};

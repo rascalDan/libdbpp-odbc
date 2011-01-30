@@ -57,7 +57,7 @@ namespace ODBC {
 			}
 			virtual SQLSMALLINT ctype() const { return SQL_C_CHAR; }
 			virtual SQLSMALLINT stype() const { return SQL_CHAR; }
-			virtual SQLINTEGER size() const { return data.size(); }
+			virtual SQLULEN size() const { return data.size(); }
 			virtual SQLINTEGER dp() const { return 0; }
 			virtual const void * dataAddress() const { return &data.front(); }
 			virtual void * rwDataAddress() { return &data.front(); }
@@ -78,7 +78,7 @@ namespace ODBC {
 			SignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return SignedIntegerParam::ctype(); }
-			virtual SQLLEN size() const { return SignedIntegerParam::size(); }
+			virtual SQLULEN size() const { return SignedIntegerParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
 			virtual const Glib::ustring & compose() const;
 			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
@@ -106,7 +106,7 @@ namespace ODBC {
 			FloatingPointColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return FloatingPointParam::ctype(); }
-			virtual SQLLEN size() const { return FloatingPointParam::size(); }
+			virtual SQLULEN size() const { return FloatingPointParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
 			virtual const Glib::ustring & compose() const;
 			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
@@ -121,7 +121,7 @@ namespace ODBC {
 			TimeStampColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return TimeStampParam::ctype(); }
-			virtual SQLLEN size() const { return TimeStampParam::size(); }
+			virtual SQLULEN size() const { return TimeStampParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
 			virtual const Glib::ustring & compose() const;
 			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
