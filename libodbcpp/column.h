@@ -8,6 +8,14 @@
 
 namespace ODBC {
 	class SelectCommand;
+	class HandleField {
+		public:
+			virtual void null() = 0;
+			virtual void string(const std::vector<char> &) = 0;
+			virtual void integer(SQLINTEGER) = 0;
+			virtual void floatingpoint(SQLDOUBLE) = 0;
+			virtual void timestamp(const SQL_TIMESTAMP_STRUCT &) = 0;
+	};
 	class Column : public virtual Bind {
 		public:
 			Column(SelectCommand *, const Glib::ustring &, unsigned int);
@@ -34,18 +42,14 @@ namespace ODBC {
 			virtual operator struct tm () const { throw std::bad_cast(); }
 			virtual operator SQL_TIMESTAMP_STRUCT () const { throw std::bad_cast(); }
 
-			virtual const Glib::ustring & compose() const = 0;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const = 0;
-			virtual int writeToBuf(char ** buf) const = 0;
-			virtual int writeToBuf(char ** buf, const char * fmt) const = 0;
 			bool isNull() const;
+			virtual void apply(HandleField &) const = 0;
 
 			const unsigned int		colNo;
 			const Glib::ustring		name;
 			const SelectCommand *	selectCmd;
 		protected:
 			virtual const Param * meAsAParam() const = 0;
-			mutable Glib::ustring * composeCache;
 	};
 	class CharArrayColumn : public Column, public Param {
 		public:
@@ -63,12 +67,9 @@ namespace ODBC {
 			virtual void * rwDataAddress() { return &data.front(); }
 			void operator=(const Glib::ustring & d);
 			void resize(SQLHANDLE);
-			virtual const Glib::ustring & compose() const;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
-			virtual int writeToBuf(char ** buf) const;
-			virtual int writeToBuf(char ** buf, const char * fmt) const;
 			virtual operator std::string () const { return std::string(&data.front(), bindLen); }
 			virtual operator Glib::ustring () const { return std::string(&data.front(), bindLen); }
+			virtual void apply(HandleField &) const;
 		protected:
 			virtual const Param * meAsAParam() const { return this; }
 			CharArray data;
@@ -80,24 +81,17 @@ namespace ODBC {
 			virtual SQLSMALLINT ctype() const { return SignedIntegerParam::ctype(); }
 			virtual SQLULEN size() const { return SignedIntegerParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
-			virtual const Glib::ustring & compose() const;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
-			virtual int writeToBuf(char ** buf) const;
-			virtual int writeToBuf(char ** buf, const char * fmt) const;
 			virtual operator int () const { return data; }
 			virtual operator long () const { return data; }
 			virtual operator long long () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
+			virtual void apply(HandleField &) const;
 	};
 #ifdef COMPLETENESS
 	class UnsignedIntegerColumn : public Column, public UnsignedIntegerParam {
 		public:
 			UnsignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				Column(sc, n, i) { }
-			virtual const Glib::ustring & compose() const;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
-			virtual int writeToBuf(char ** buf) const;
-			virtual int writeToBuf(char ** buf, const char * fmt) const;
 			virtual const Param * meAsAParam() const { return this; }
 	};
 #endif
@@ -108,13 +102,10 @@ namespace ODBC {
 			virtual SQLSMALLINT ctype() const { return FloatingPointParam::ctype(); }
 			virtual SQLULEN size() const { return FloatingPointParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
-			virtual const Glib::ustring & compose() const;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
-			virtual int writeToBuf(char ** buf) const;
-			virtual int writeToBuf(char ** buf, const char * fmt) const;
 			virtual operator double () const { return data; }
 			virtual operator float () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
+			virtual void apply(HandleField &) const;
 	};
 	class TimeStampColumn : public Column, public TimeStampParam {
 		public:
@@ -123,13 +114,10 @@ namespace ODBC {
 			virtual SQLSMALLINT ctype() const { return TimeStampParam::ctype(); }
 			virtual SQLULEN size() const { return TimeStampParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
-			virtual const Glib::ustring & compose() const;
-			virtual Glib::ustring compose(const Glib::ustring & fmt) const;
-			virtual int writeToBuf(char ** buf) const;
-			virtual int writeToBuf(char ** buf, const char * fmt) const;
 			virtual operator struct tm () const;
 			virtual operator SQL_TIMESTAMP_STRUCT () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
+			virtual void apply(HandleField &) const;
 	};
 }
 

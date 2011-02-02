@@ -9,15 +9,13 @@
 ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 	colNo(i),
 	name(n),
-	selectCmd(sc),
-	composeCache(NULL)
+	selectCmd(sc)
 {
 	bindLen = 0;
 }
 
 ODBC::Column::~Column()
 {
-	delete composeCache;
 }
 
 void
@@ -41,8 +39,6 @@ ODBC::CharArrayColumn::resize(SQLHANDLE hStmt)
 void
 ODBC::Column::onScroll()
 {
-	delete composeCache;
-	composeCache = NULL;
 }
 
 bool
@@ -68,89 +64,6 @@ ODBC::Column::bind()
 	}
 }
 
-#define SIMPLEFORMATTER(ctype, deffmtstr) \
-	int \
-	ODBC::ctype::writeToBuf(char ** buf, const char * fmt) const \
-	{ \
-		return asprintf(buf, fmt, data); \
-	} \
-	int \
-	ODBC::ctype::writeToBuf(char ** buf) const \
-	{ \
-		return writeToBuf(buf, deffmtstr); \
-	} \
-	const Glib::ustring & \
-	ODBC::ctype::compose() const \
-	{ \
-		if (!composeCache) { \
-			composeCache = new Glib::ustring(Glib::ustring::compose("%1", data)); \
-		} \
-		return *composeCache; \
-	} \
-	Glib::ustring \
-	ODBC::ctype::compose(const Glib::ustring & fmt) const \
-	{ \
-		return Glib::ustring::compose(fmt, data); \
-	}
-SIMPLEFORMATTER(FloatingPointColumn, "%g");
-SIMPLEFORMATTER(SignedIntegerColumn, "%ld");
-#ifdef COMPLETENESS
-SIMPLEFORMATTER(UnsignedIntegerColumn, "%lu");
-#endif
-
-int
-ODBC::CharArrayColumn::writeToBuf(char ** buf, const char * fmt) const
-{
-	return asprintf(buf, fmt, &data[0]);
-}
-int
-ODBC::CharArrayColumn::writeToBuf(char ** buf) const
-{
-	return writeToBuf(buf, "%s");
-}
-const Glib::ustring &
-ODBC::CharArrayColumn::compose() const
-{
-	if (!composeCache) {
-		composeCache = new Glib::ustring(&data.front(), &data[bindLen]);
-	}
-	return *composeCache;
-}
-Glib::ustring
-ODBC::CharArrayColumn::compose(const Glib::ustring & fmt) const
-{
-	return Glib::ustring::compose(fmt, &data.front());
-}
-int
-ODBC::TimeStampColumn::writeToBuf(char ** buf, const char * fmt) const
-{
-	*buf = (char *)malloc(300);
-	struct tm t;
-	t << data;
-	return strftime(*buf, 300, fmt, &t);
-}
-int
-ODBC::TimeStampColumn::writeToBuf(char ** buf) const
-{
-	return writeToBuf(buf, "%F %T");
-}
-Glib::ustring
-ODBC::TimeStampColumn::compose(const Glib::ustring & fmt) const
-{
-	char buf[300];
-	struct tm t;
-	t << data;
-	int len = strftime(buf, sizeof(buf), fmt.c_str(), &t);
-	return Glib::ustring(buf, len);
-}
-const Glib::ustring &
-ODBC::TimeStampColumn::compose() const
-{
-	if (!composeCache) {
-		composeCache = new Glib::ustring(Glib::ustring(compose("%F %T")));
-	}
-	return *composeCache;
-}
 ODBC::TimeStampColumn::operator tm() const
 {
 	struct tm t;
@@ -175,4 +88,29 @@ void operator << (struct tm & target, const SQL_TIMESTAMP_STRUCT & src)
 	target.tm_hour = src.hour;
 	target.tm_min = src.minute;
 	target.tm_sec = src.second;
+}
+
+void
+ODBC::SignedIntegerColumn::apply(ODBC::HandleField & h) const
+{
+	if (isNull()) return h.null();
+	h.integer(data);
+}
+void
+ODBC::FloatingPointColumn::apply(ODBC::HandleField & h) const
+{
+	if (isNull()) return h.null();
+	h.floatingpoint(data);
+}
+void
+ODBC::CharArrayColumn::apply(ODBC::HandleField & h) const
+{
+	if (isNull()) return h.null();
+	h.string(data);
+}
+void
+ODBC::TimeStampColumn::apply(ODBC::HandleField & h) const
+{
+	if (isNull()) return h.null();
+	h.timestamp(data);
 }
