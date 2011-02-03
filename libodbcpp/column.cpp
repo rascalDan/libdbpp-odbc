@@ -106,7 +106,7 @@ void
 ODBC::CharArrayColumn::apply(ODBC::HandleField & h) const
 {
 	if (isNull()) return h.null();
-	h.string(data);
+	h.string(data, bindLen);
 }
 void
 ODBC::TimeStampColumn::apply(ODBC::HandleField & h) const

@@ -11,7 +11,7 @@ namespace ODBC {
 	class HandleField {
 		public:
 			virtual void null() = 0;
-			virtual void string(const std::vector<char> &) = 0;
+			virtual void string(const std::vector<char> &, size_t len) = 0;
 			virtual void integer(SQLINTEGER) = 0;
 			virtual void floatingpoint(SQLDOUBLE) = 0;
 			virtual void timestamp(const SQL_TIMESTAMP_STRUCT &) = 0;
