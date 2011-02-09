@@ -1,6 +1,7 @@
 #ifndef ODBC_COLUMN_H
 #define ODBC_COLUMN_H
 
+#include "../libdbpp/column.h"
 #include <typeinfo>
 #include <glibmm/ustring.h>
 #include "bind.h"
@@ -8,21 +9,13 @@
 
 namespace ODBC {
 	class SelectCommand;
-	class HandleField {
+	class Column : public virtual Bind, public virtual DB::Column {
 		public:
-			virtual void null() = 0;
-			virtual void string(const std::vector<char> &, size_t len) = 0;
-			virtual void integer(SQLINTEGER) = 0;
-			virtual void floatingpoint(SQLDOUBLE) = 0;
-			virtual void timestamp(const SQL_TIMESTAMP_STRUCT &) = 0;
-	};
-	class Column : public virtual Bind {
-		public:
-			Column(SelectCommand *, const Glib::ustring &, unsigned int);
+			Column(SelectCommand *, const Glib::ustring & s, unsigned int i);
 			virtual ~Column() = 0;
 			void bind();
 			virtual void * rwDataAddress() = 0;
-			void rebind(Command *, unsigned int idx) const;
+			void rebind(DB::Command *, unsigned int idx) const;
 			virtual void resize(SQLHANDLE);
 			virtual void onScroll();
 
@@ -43,10 +36,8 @@ namespace ODBC {
 			virtual operator SQL_TIMESTAMP_STRUCT () const { throw std::bad_cast(); }
 
 			bool isNull() const;
-			virtual void apply(HandleField &) const = 0;
+			virtual void apply(DB::HandleField &) const = 0;
 
-			const unsigned int		colNo;
-			const Glib::ustring		name;
 			const SelectCommand *	selectCmd;
 		protected:
 			virtual const Param * meAsAParam() const = 0;
@@ -55,6 +46,7 @@ namespace ODBC {
 		public:
 			typedef std::vector<char> CharArray;
 			CharArrayColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+				DB::Column(n, i),
 				Column(sc, n, i)
 			{
 				data.resize(256);
@@ -69,7 +61,7 @@ namespace ODBC {
 			void resize(SQLHANDLE);
 			virtual operator std::string () const { return std::string(&data.front(), bindLen); }
 			virtual operator Glib::ustring () const { return std::string(&data.front(), bindLen); }
-			virtual void apply(HandleField &) const;
+			virtual void apply(DB::HandleField &) const;
 		protected:
 			virtual const Param * meAsAParam() const { return this; }
 			CharArray data;
@@ -77,6 +69,7 @@ namespace ODBC {
 	class SignedIntegerColumn : public Column, public SignedIntegerParam {
 		public:
 			SignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+				DB::Column(n, i),
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return SignedIntegerParam::ctype(); }
 			virtual SQLULEN size() const { return SignedIntegerParam::size(); }
@@ -85,7 +78,7 @@ namespace ODBC {
 			virtual operator long () const { return data; }
 			virtual operator long long () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(HandleField &) const;
+			virtual void apply(DB::HandleField &) const;
 	};
 #ifdef COMPLETENESS
 	class UnsignedIntegerColumn : public Column, public UnsignedIntegerParam {
@@ -98,6 +91,7 @@ namespace ODBC {
 	class FloatingPointColumn : public Column, public FloatingPointParam {
 		public:
 			FloatingPointColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+				DB::Column(n, i),
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return FloatingPointParam::ctype(); }
 			virtual SQLULEN size() const { return FloatingPointParam::size(); }
@@ -105,11 +99,12 @@ namespace ODBC {
 			virtual operator double () const { return data; }
 			virtual operator float () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(HandleField &) const;
+			virtual void apply(DB::HandleField &) const;
 	};
 	class TimeStampColumn : public Column, public TimeStampParam {
 		public:
 			TimeStampColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+				DB::Column(n, i),
 				Column(sc, n, i) { }
 			virtual SQLSMALLINT ctype() const { return TimeStampParam::ctype(); }
 			virtual SQLULEN size() const { return TimeStampParam::size(); }
@@ -117,7 +112,7 @@ namespace ODBC {
 			virtual operator struct tm () const;
 			virtual operator SQL_TIMESTAMP_STRUCT () const { return data; }
 			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(HandleField &) const;
+			virtual void apply(DB::HandleField &) const;
 	};
 }
 

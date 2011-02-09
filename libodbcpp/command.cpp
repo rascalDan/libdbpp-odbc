@@ -4,7 +4,7 @@
 #include <sqlext.h>
 
 ODBC::Command::Command(const Connection & c, const std::string & s) :
-	sql(s),
+	DB::Command(s),
 	connection(c)
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);

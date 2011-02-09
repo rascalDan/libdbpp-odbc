@@ -3,14 +3,15 @@ alias glibmm : : : :
 	<linkflags>"`pkg-config --libs glibmm-2.4`"
 	;
 
-project
-	: usage-requirements
-		<include>.
-	: requirements
-		<library>glibmm 
-	;
+lib odbc : : <name>odbc ;
 
 lib odbcpp :
 	[ glob *.cpp ] :
 	<cflags>-fPIC
-	<link>static ;
+	<library>glibmm 
+	<library>odbc 
+	: :
+	<include>.
+	<library>glibmm 
+	<library>../libdbpp
+	;

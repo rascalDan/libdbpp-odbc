@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "connection.h"
+#include "selectcommand.h"
+#include "modifycommand.h"
 #include "error.h"
 
 ODBC::Connection::Connection(const DSN& d) :
@@ -160,6 +162,18 @@ ODBC::Connection::inTx() const
 	return (txDepth > 0);
 }
 
+DB::SelectCommand *
+ODBC::Connection::newSelectCommand(const std::string & sql) const
+{
+	return new ODBC::SelectCommand(*this, sql);
+}
+
+DB::ModifyCommand *
+ODBC::Connection::newModifyCommand(const std::string & sql) const
+{
+	return new ODBC::ModifyCommand(*this, sql);
+}
+
 std::string
 ODBC::Connection::getAttrStr(SQLINTEGER attr) const
 {
@@ -168,7 +182,7 @@ ODBC::Connection::getAttrStr(SQLINTEGER attr) const
 	SQLINTEGER size = 0;
 	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, (unsigned char *)rtn.c_str(), BUFSIZ, &size);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "ODBC::Connection::getAttrStr SQLGetConnectAttr");
 	}
 	rtn.resize(size);
 	return rtn;
@@ -180,20 +194,29 @@ ODBC::Connection::getAttrInt(SQLINTEGER attr) const
 	SQLINTEGER result;
 	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "%s", __FUNCTION__);
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "ODBC::Connection::getAttrInt SQLGetConnectAttr");
 	}
 	return result;
 }
 
+void
+ODBC::Connection::ping() const
+{
+	SQLINTEGER dead = getAttrInt(SQL_ATTR_CONNECTION_DEAD);
+	if (dead != SQL_CD_FALSE) {
+		throw ODBC::Error("Connection is dead");
+	}
+}
+
 ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * stage) :
-	ODBC::Error(err, handletype, handle, "%s", stage),
-	FailureTime(time(NULL))
+	ODBC::Error(err, handletype, handle, stage),
+	DB::ConnectionError()
 {
 }
 
 ODBC::ConnectionError::ConnectionError(const ConnectionError & e) :
 	ODBC::Error(strdup(e.what())),
-	FailureTime(e.FailureTime)
+	DB::ConnectionError(e.FailureTime)
 {
 }
 

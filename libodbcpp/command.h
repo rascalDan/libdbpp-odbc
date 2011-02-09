@@ -1,13 +1,14 @@
 #ifndef ODBC_COMMAND_H
 #define ODBC_COMMAND_H
 
+#include "../libdbpp/command.h"
 #include <vector>
 #include "connection.h"
 #include <glibmm/ustring.h>
 
 namespace ODBC {
 	class Param;
-	class Command {
+	class Command : public virtual DB::Command {
 			typedef std::vector<Param*> Params;
 		public:
 			Command(const Connection &, const std::string & sql);
@@ -31,7 +32,6 @@ namespace ODBC {
 
 			void				bindNull(unsigned int i);
 
-			const std::string	sql;
 		protected:
 			friend class Param;
 			friend class Column;

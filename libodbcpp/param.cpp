@@ -26,7 +26,7 @@ ParamType *
 ODBC::Command::makeParam(unsigned int idx)
 {
 	if (idx >= params.size()) {
-		throw Error("%s: Bind out of bounds", __FUNCTION__);
+		throw Error("ODBC::Command::makeParam Bind out of bounds");
 	}
 	Param * & p = params[idx];
 	if (p) {
@@ -48,8 +48,7 @@ ODBC::Param::bind() const
 		RETCODE rc = SQLBindParameter(paramCmd->hStmt, paramIdx + 1, SQL_PARAM_INPUT, ctype(), stype(),
 				size(), dp(), const_cast<void *>(dataAddress()), size(), &bindLen);
 		if (!SQL_SUCCEEDED(rc)) {
-			throw Error(rc, SQL_HANDLE_STMT, paramCmd->hStmt, "%s: Bind for parameter %u",
-					__FUNCTION__, paramIdx);
+			throw Error(rc, SQL_HANDLE_STMT, paramCmd->hStmt, "ODBC::Param::bind Bind parameter");
 		}
 		paramBound = true;
 	}

@@ -6,7 +6,9 @@
 #include <string.h>
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
-	Command(c, s)
+	DB::Command(s),
+	ODBC::Command(c, s),
+	DB::SelectCommand(s)
 {
 }
 
@@ -20,10 +22,15 @@ ODBC::SelectCommand::~SelectCommand()
 	if (columns.size()) {
 		RETCODE rc = SQLCloseCursor(hStmt);
 		if (!SQL_SUCCEEDED(rc)) {
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLCloseCursor",
-					__FUNCTION__);
+			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::~SelectCommand SQLCloseCursor");
 		}
 	}
+}
+
+bool
+ODBC::SelectCommand::fetch()
+{
+	return fetch(SQL_FETCH_NEXT, 0);
 }
 
 bool
@@ -55,8 +62,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 					}
 				}
 			}
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLFetch",
-					__FUNCTION__);
+			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::fetch SQLFetch");
 	}
 }
 
@@ -65,16 +71,14 @@ ODBC::SelectCommand::execute()
 {
 	RETCODE rc = SQLExecute(hStmt); 
 	if (!SQL_SUCCEEDED(rc)) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLExecute",
-				__FUNCTION__);
+		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLExecute");
 	}
 	SQLSMALLINT colCount;
 	if (!SQL_SUCCEEDED(rc = SQLNumResultCols(hStmt, &colCount))) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLNumResultCols",
-				__FUNCTION__);
+		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLNumResultCols");
 	}
 	if (colCount < 1) {
-		throw Error("%s: No result columns", __FUNCTION__);
+		throw Error("ODBC::SelectCommand::execute No result columns");
 	}
 	columns.resize(colCount);
 	for (int col = 0; col < colCount; col++) {
@@ -84,8 +88,7 @@ ODBC::SelectCommand::execute()
 		int sqlcol = col + 1;
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
 						&bindSize, &dp, &nullable))) {
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLDescribeCol for %d",
-					__FUNCTION__, col);
+			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLDescribeCol for %d");
 		}
 		Glib::ustring colName((const char *)_colName, nameLen);
 		switch (bindType) {
@@ -118,16 +121,16 @@ ODBC::SelectCommand::execute()
 }
 
 
-const ODBC::Column&
+const DB::Column&
 ODBC::SelectCommand::operator[](unsigned int col) const
 {
 	if (col > columns.size()) {
-		throw ODBC::Error("Column index (%u) out of range", col);
+		throw ODBC::Error("Column index out of range");
 	}
 	return *columns[col];
 }
 
-const ODBC::Column&
+const DB::Column&
 ODBC::SelectCommand::operator[](const Glib::ustring & colName) const
 {
 	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
@@ -135,7 +138,7 @@ ODBC::SelectCommand::operator[](const Glib::ustring & colName) const
 			return **col;
 		}
 	}
-	throw ODBC::Error("Column (%s) does not exist", colName.c_str());
+	throw ODBC::Error("Column does not exist");
 }
 
 unsigned int
@@ -148,7 +151,7 @@ ODBC::SelectCommand::getOrdinal(const Glib::ustring & colName) const
 		}
 		n += 1;
 	}
-	throw ODBC::Error("Column (%s) does not exist", colName.c_str());
+	throw ODBC::Error("Column does not exist");
 }
 
 unsigned int

@@ -2,7 +2,9 @@
 #include "error.h"
 
 ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection & c, const std::string & sql) :
-	Command(c, sql)
+	DB::Command(sql),
+	ODBC::Command(c, sql),
+	DB::ModifyCommand(sql)
 {
 }
 
@@ -20,21 +22,19 @@ ODBC::ModifyCommand::execute(bool anc)
     if (!SQL_SUCCEEDED(rc)) {
 		if (rc != SQL_NO_DATA || !anc) {
 			connection.abortTx();
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLExecute",
-					__FUNCTION__);
+			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::ModifyCommand::execute SQLExecute");
 		}
     }
 	SQLLEN rows;
 	rc = SQLRowCount(hStmt, &rows);
     if (!SQL_SUCCEEDED(rc)) {
 		connection.abortTx();
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "%s: SQLRowCount",
-				__FUNCTION__);
+		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::ModifyCommand::execute SQLRowCount");
 	}
 	if (rows > 0 || anc) {
 		return rows;
 	}
 	connection.abortTx();
-	throw Error("%s: No rows affected", __FUNCTION__);
+	throw Error("No rows affected");
 }
 

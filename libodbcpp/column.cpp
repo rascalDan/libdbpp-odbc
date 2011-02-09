@@ -6,9 +6,8 @@
 #include "selectcommand.h"
 #include "error.h"
 
-ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
-	colNo(i),
-	name(n),
+ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i) :
+	DB::Column(s, i),
 	selectCmd(sc)
 {
 	bindLen = 0;
@@ -48,9 +47,9 @@ ODBC::Column::isNull() const
 }
 
 void
-ODBC::Column::rebind(Command * cmd, unsigned int idx) const
+ODBC::Column::rebind(DB::Command * cmd, unsigned int idx) const
 {
-	meAsAParam()->paramCmd = cmd;
+	meAsAParam()->paramCmd = dynamic_cast<ODBC::Command *>(cmd);
 	meAsAParam()->paramIdx = idx;
 	meAsAParam()->bind();
 }
@@ -60,7 +59,7 @@ ODBC::Column::bind()
 {
 	RETCODE rc = SQLBindCol(selectCmd->hStmt, colNo + 1, ctype(), rwDataAddress(), size(), &bindLen);
 	if (!SQL_SUCCEEDED(rc)) {
-		throw Error(rc, SQL_HANDLE_STMT, selectCmd->hStmt, "%s: Bind column %u", __FUNCTION__, colNo);
+		throw Error(rc, SQL_HANDLE_STMT, selectCmd->hStmt, "ODBC::Column::bind");
 	}
 }
 
@@ -91,26 +90,26 @@ void operator << (struct tm & target, const SQL_TIMESTAMP_STRUCT & src)
 }
 
 void
-ODBC::SignedIntegerColumn::apply(ODBC::HandleField & h) const
+ODBC::SignedIntegerColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
 	h.integer(data);
 }
 void
-ODBC::FloatingPointColumn::apply(ODBC::HandleField & h) const
+ODBC::FloatingPointColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
 	h.floatingpoint(data);
 }
 void
-ODBC::CharArrayColumn::apply(ODBC::HandleField & h) const
+ODBC::CharArrayColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
-	h.string(data, bindLen);
+	h.string(&data.front(), bindLen);
 }
 void
-ODBC::TimeStampColumn::apply(ODBC::HandleField & h) const
+ODBC::TimeStampColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
-	h.timestamp(data);
+	h.timestamp(*this);
 }
