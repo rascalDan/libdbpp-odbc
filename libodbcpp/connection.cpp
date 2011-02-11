@@ -10,6 +10,8 @@
 ODBC::Connection::Connection(const DSN& d) :
 	env(0),
 	conn(0),
+	thinkDelStyle(DB::BulkDeleteUsingUsing),
+	thinkUpdStyle(DB::BulkUpdateUsingFromSrc),
 	txDepth(0),
 	txAborted(false)
 {
@@ -53,11 +55,23 @@ ODBC::Connection::connectPost()
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
 	}
+	char info[1024];
+	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, (SQLCHAR*)info, sizeof(info), NULL);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Get info");
+	}
+	// Apply known DB specific tweaks
+	if (strstr(info, "myodbc") != NULL) {
+		thinkDelStyle = DB::BulkDeleteUsingUsingAlias;
+		thinkUpdStyle = DB::BulkUpdateUsingJoin;
+	}
 }
 
 ODBC::Connection::Connection(const std::string & s) :
 	env(0),
 	conn(0),
+	thinkDelStyle(DB::BulkDeleteUsingUsing),
+	thinkUpdStyle(DB::BulkUpdateUsingFromSrc),
 	txDepth(0),
 	txAborted(false)
 {
@@ -160,6 +174,18 @@ bool
 ODBC::Connection::inTx() const
 {
 	return (txDepth > 0);
+}
+
+DB::BulkDeleteStyle
+ODBC::Connection::bulkDeleteStyle() const
+{
+	return thinkDelStyle;
+}
+
+DB::BulkUpdateStyle
+ODBC::Connection::bulkUpdateStyle() const
+{
+	return thinkUpdStyle;
 }
 
 DB::SelectCommand *
