@@ -18,12 +18,12 @@ ODBC::Column::~Column()
 }
 
 void
-ODBC::Column::resize(SQLHANDLE hStmt)
+ODBC::Column::resize(SQLHANDLE)
 {
 }
 
 void
-ODBC::CharArrayColumn::resize(SQLHANDLE hStmt)
+ODBC::CharArrayColumn::resize(SQLHANDLE)
 {
 	if (bindLen >= SQLLEN(data.size())) {
 		data.resize(bindLen + 1);
