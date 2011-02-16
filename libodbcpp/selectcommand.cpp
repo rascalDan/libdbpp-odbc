@@ -41,14 +41,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 	}
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
 	switch (rc) {
-		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
-			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
-				(*i)->onScroll();
-			}
-			return true;
-		case SQL_NO_DATA:
-			return false;
 		default:
 			{
 				SQLCHAR sqlstatus[6];
@@ -61,8 +54,17 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 						return fetch(SQL_FETCH_RELATIVE, 0);
 					}
 				}
+				if (rc != SQL_SUCCESS_WITH_INFO) {
+					throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::fetch SQLFetch");
+				}
 			}
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::fetch SQLFetch");
+		case SQL_SUCCESS:
+			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+				(*i)->onScroll();
+			}
+			return true;
+		case SQL_NO_DATA:
+			return false;
 	}
 }
 
