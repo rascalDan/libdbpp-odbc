@@ -100,6 +100,15 @@ ODBC::Connection::~Connection()
 	}
 }
 
+void
+ODBC::Connection::finish() const
+{
+	if (txDepth != 0) {
+		rollbackTx();
+		throw Error("Transaction still open");
+	}
+}
+
 int
 ODBC::Connection::beginTx() const
 {

@@ -16,6 +16,7 @@ namespace ODBC {
 			SQLHENV 		env;
 			SQLHDBC 		conn;
 
+			void			finish() const;
 			int				beginTx() const;
 			int				commitTx() const;
 			int				rollbackTx() const;
