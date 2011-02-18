@@ -49,7 +49,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
 						for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
-							(*i)->resize(hStmt);
+							(*i)->resize();
 						}
 						return fetch(SQL_FETCH_RELATIVE, 0);
 					}
@@ -59,10 +59,16 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 				}
 			}
 		case SQL_SUCCESS:
-			for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
-				(*i)->onScroll();
+			{
+				bool resized = false;
+				for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+					resized |= (*i)->resize();
+				}
+				if (resized) {
+					return fetch(SQL_FETCH_RELATIVE, 0);
+				}
+				return true;
 			}
-			return true;
 		case SQL_NO_DATA:
 			return false;
 	}
@@ -115,7 +121,7 @@ ODBC::SelectCommand::execute()
 				columns[col] = new TimeStampColumn(this, colName, col);
 				break;
 			default:
-				columns[col] = new CharArrayColumn(this, colName, col);
+				columns[col] = new CharArrayColumn(this, colName, col, bindSize);
 				break;
 		};
 		columns[col]->bind();

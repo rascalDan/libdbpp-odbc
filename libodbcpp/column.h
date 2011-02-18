@@ -4,6 +4,7 @@
 #include "../libdbpp/column.h"
 #include <typeinfo>
 #include <glibmm/ustring.h>
+#include <algorithm>
 #include "bind.h"
 #include "param.h"
 
@@ -16,8 +17,7 @@ namespace ODBC {
 			void bind();
 			virtual void * rwDataAddress() = 0;
 			void rebind(DB::Command *, unsigned int idx) const;
-			virtual void resize(SQLHANDLE);
-			virtual void onScroll();
+			virtual bool resize();
 
 			virtual operator int () const { throw std::bad_cast(); }
 			virtual operator long () const { throw std::bad_cast(); }
@@ -45,11 +45,11 @@ namespace ODBC {
 	class CharArrayColumn : public Column, public Param {
 		public:
 			typedef std::vector<char> CharArray;
-			CharArrayColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+			CharArrayColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i, SQLULEN sizeHint) :
 				DB::Column(n, i),
 				Column(sc, n, i)
 			{
-				data.resize(256);
+				data.resize(std::max<SQLULEN>(sizeHint, 64) + 1);
 			}
 			virtual SQLSMALLINT ctype() const { return SQL_C_CHAR; }
 			virtual SQLSMALLINT stype() const { return SQL_CHAR; }
@@ -58,7 +58,7 @@ namespace ODBC {
 			virtual const void * dataAddress() const { return &data.front(); }
 			virtual void * rwDataAddress() { return &data.front(); }
 			void operator=(const Glib::ustring & d);
-			void resize(SQLHANDLE);
+			bool resize();
 			virtual operator std::string () const { return std::string(&data.front(), bindLen); }
 			virtual operator Glib::ustring () const { return std::string(&data.front(), bindLen); }
 			virtual void apply(DB::HandleField &) const;

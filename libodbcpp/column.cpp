@@ -17,13 +17,14 @@ ODBC::Column::~Column()
 {
 }
 
-void
-ODBC::Column::resize(SQLHANDLE)
+bool
+ODBC::Column::resize()
 {
+	return false;
 }
 
-void
-ODBC::CharArrayColumn::resize(SQLHANDLE)
+bool
+ODBC::CharArrayColumn::resize()
 {
 	if (bindLen >= SQLLEN(data.size())) {
 		data.resize(bindLen + 1);
@@ -32,12 +33,9 @@ ODBC::CharArrayColumn::resize(SQLHANDLE)
 			paramBound = false;
 			Param::bind();
 		}
+		return true;
 	}
-}
-
-void
-ODBC::Column::onScroll()
-{
+	return false;
 }
 
 bool
