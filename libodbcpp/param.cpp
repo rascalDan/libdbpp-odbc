@@ -98,7 +98,7 @@ ODBC::GlibUstringParam::operator=(Glib::ustring const & d)
 }
 
 void
-ODBC::TimeStampParam::operator=(long const & d)
+ODBC::TimeStampParam::operator=(time_t const & d)
 {
 	struct tm t;
 	gmtime_r(&d, &t);

@@ -61,7 +61,7 @@ ODBC::Column::bind()
 	}
 }
 
-ODBC::TimeStampColumn::operator tm() const
+ODBC::TimeStampColumn::operator struct tm() const
 {
 	struct tm t;
 	t << data;
