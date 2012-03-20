@@ -32,6 +32,10 @@ namespace ODBC {
 			DB::SelectCommand * newSelectCommand(const std::string & sql) const;
 			DB::ModifyCommand * newModifyCommand(const std::string & sql) const;
 
+			void	beginBulkUpload(const char *, const char *) const;
+			void	endBulkUpload(const char *) const;
+			size_t bulkUploadData(const char *, size_t) const;
+
 		private:
 			DB::BulkDeleteStyle thinkDelStyle;
 			DB::BulkUpdateStyle thinkUpdStyle;

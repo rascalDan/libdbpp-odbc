@@ -1,4 +1,5 @@
 #include <sqlext.h>
+#include <stdexcept>
 #include <syslog.h>
 #include <stdio.h>
 #include <string.h>
@@ -253,5 +254,18 @@ ODBC::ConnectionError::ConnectionError(const ConnectionError & e) :
 	ODBC::Error(strdup(e.what())),
 	DB::ConnectionError(e.FailureTime)
 {
+}
+
+void ODBC::Connection::beginBulkUpload(const char *, const char *) const
+{
+	throw std::runtime_error("Not implemented");
+}
+void ODBC::Connection::endBulkUpload(const char *) const
+{
+	throw std::runtime_error("Not implemented");
+}
+size_t ODBC::Connection::bulkUploadData(const char *, size_t) const
+{
+	throw std::runtime_error("Not implemented");
 }
 
