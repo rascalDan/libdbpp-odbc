@@ -20,13 +20,13 @@ odbc_verror(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * 
     case SQL_SUCCESS:
     case SQL_SUCCESS_WITH_INFO:
 		if (msg) {
-			if (asprintf(msg, "%d: %ld: %5.5s: \"%s\" while attempting to %s",
-					err, sqlerr, sqlstatus, sqlerrmsg, action) < 1) {
+			if (asprintf(msg, "%d: %d: %5.5s: \"%s\" while attempting to %s",
+					err, (int)sqlerr, sqlstatus, sqlerrmsg, action) < 1) {
 				*msg = NULL;
 			}
 		}
-        syslog(LOG_WARNING, "%s: %d: %ld: %5.5s: \"%s\" while attempting to %s",
-                __FUNCTION__, err, sqlerr, sqlstatus, sqlerrmsg, action);
+        syslog(LOG_WARNING, "%s: %d: %d: %5.5s: \"%s\" while attempting to %s",
+                __FUNCTION__, err, (int)sqlerr, sqlstatus, sqlerrmsg, action);
         break;
 
     case SQL_INVALID_HANDLE:
