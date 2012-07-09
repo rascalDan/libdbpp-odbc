@@ -14,7 +14,7 @@ ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) 
 
 ODBC::SelectCommand::~SelectCommand()
 {
-	for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+	for (Columns::iterator i = columns.begin(); i != columns.end(); ++i) {
 		if (*i) {
 			delete *i;
 		}
@@ -36,7 +36,7 @@ ODBC::SelectCommand::fetch()
 bool
 ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
-	if (columns.size() == 0) {
+	if (columns.empty()) {
 		execute();
 	}
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
@@ -48,7 +48,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
-						for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+						for (Columns::iterator i = columns.begin(); i != columns.end(); ++i) {
 							(*i)->resize();
 						}
 						return fetch(SQL_FETCH_RELATIVE, 0);
@@ -61,7 +61,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 		case SQL_SUCCESS:
 			{
 				bool resized = false;
-				for (Columns::iterator i = columns.begin(); i != columns.end(); i++) {
+				for (Columns::iterator i = columns.begin(); i != columns.end(); ++i) {
 					resized |= (*i)->resize();
 				}
 				if (resized) {
@@ -141,7 +141,7 @@ ODBC::SelectCommand::operator[](unsigned int col) const
 const DB::Column&
 ODBC::SelectCommand::operator[](const Glib::ustring & colName) const
 {
-	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
+	for (Columns::const_iterator col = columns.begin(); col != columns.end(); ++col) {
 		if ((*col)->name == colName) {
 			return **col;
 		}
@@ -153,7 +153,7 @@ unsigned int
 ODBC::SelectCommand::getOrdinal(const Glib::ustring & colName) const
 {
 	unsigned int n = 0;
-	for (Columns::const_iterator col = columns.begin(); col != columns.end(); col++) {
+	for (Columns::const_iterator col = columns.begin(); col != columns.end(); ++col) {
 		if ((*col)->name == colName) {
 			return n;
 		}

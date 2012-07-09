@@ -31,7 +31,7 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 
 ODBC::Command::~Command()
 {
-	for (Params::iterator i = params.begin(); i != params.end(); i++) {
+	for (Params::iterator i = params.begin(); i != params.end(); ++i) {
 		if (*i) {
 			delete *i;
 		}
