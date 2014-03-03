@@ -61,32 +61,19 @@ ODBC::Column::bind()
 	}
 }
 
-ODBC::TimeStampColumn::operator struct tm() const
+ODBC::TimeStampColumn::operator boost::posix_time::ptime() const
 {
-	struct tm t;
-	t << data;
-	return t;
+	return boost::posix_time::ptime(
+						boost::gregorian::date(data.year, data.month, data.day),
+						boost::posix_time::time_duration(data.hour, data.minute, data.second, data.fraction));
 }
-void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm & src)
+ODBC::IntervalColumn::operator boost::posix_time::time_duration() const
 {
-	target.year = src.tm_year + 1900;
-	target.month = src.tm_mon + 1;
-	target.day = src.tm_mday;
-	target.hour = src.tm_hour;
-	target.minute = src.tm_min;
-	target.second = src.tm_sec;
-	target.fraction = 0;
+	auto dur = boost::posix_time::time_duration(
+			(24 * data.intval.day_second.day) + data.intval.day_second.hour,
+			data.intval.day_second.minute, data.intval.day_second.second, data.intval.day_second.fraction);
+	return (data.interval_sign ? -dur : dur);
 }
-void operator << (struct tm & target, const SQL_TIMESTAMP_STRUCT & src)
-{
-	target.tm_year = src.year - 1900;
-	target.tm_mon = src.month - 1;
-	target.tm_mday = src.day;
-	target.tm_hour = src.hour;
-	target.tm_min = src.minute;
-	target.tm_sec = src.second;
-}
-
 void
 ODBC::SignedIntegerColumn::apply(DB::HandleField & h) const
 {
@@ -110,4 +97,10 @@ ODBC::TimeStampColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
 	h.timestamp(*this);
+}
+void
+ODBC::IntervalColumn::apply(DB::HandleField & h) const
+{
+	if (isNull()) return h.null();
+	h.interval(*this);
 }

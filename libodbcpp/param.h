@@ -5,6 +5,7 @@
 #include <sqlext.h>
 #include <glibmm/ustring.h>
 #include "bind.h"
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace ODBC {
 	class Command;
@@ -79,6 +80,19 @@ namespace ODBC {
 		protected:
 			Glib::ustring data;
 	};
+	class IntervalParam : public Param {
+		public:
+			IntervalParam() : Param() { }
+			IntervalParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
+			virtual SQLSMALLINT ctype() const { return SQL_C_INTERVAL_DAY_TO_SECOND; }
+			virtual SQLSMALLINT stype() const { return SQL_INTERVAL; }
+			virtual SQLULEN size() const { return sizeof(SQL_INTERVAL); }
+			virtual SQLINTEGER dp() const { return boost::posix_time::time_res_traits::num_fractional_digits(); }
+			virtual const void * dataAddress() const { return &data; }
+			void operator=(const boost::posix_time::time_duration & d);
+		protected:
+			SQL_INTERVAL_STRUCT data;
+	};
 	class TimeStampParam : public Param {
 		public:
 			TimeStampParam() : Param() { }
@@ -86,11 +100,9 @@ namespace ODBC {
 			virtual SQLSMALLINT ctype() const { return SQL_C_TYPE_TIMESTAMP; }
 			virtual SQLSMALLINT stype() const { return SQL_TYPE_TIMESTAMP; }
 			virtual SQLULEN size() const { return sizeof(SQL_TIMESTAMP_STRUCT); }
-			virtual SQLINTEGER dp() const { return 0; }
+			virtual SQLINTEGER dp() const { return boost::posix_time::time_res_traits::num_fractional_digits(); }
 			virtual const void * dataAddress() const { return &data; }
-			void operator=(const time_t & d);
-			void operator=(const struct tm * d) { data << *d; }
-			void operator=(const SQL_TIMESTAMP_STRUCT & d) { data = d; }
+			void operator=(const boost::posix_time::ptime & d);
 		protected:
 			SQL_TIMESTAMP_STRUCT data;
 	};

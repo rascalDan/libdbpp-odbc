@@ -101,6 +101,18 @@ namespace ODBC {
 			virtual const Param * meAsAParam() const { return this; }
 			virtual void apply(DB::HandleField &) const;
 	};
+	class IntervalColumn : public Column, public IntervalParam {
+		public:
+			IntervalColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
+				DB::Column(n, i),
+				Column(sc, n, i) { }
+			virtual SQLSMALLINT ctype() const { return IntervalParam::ctype(); }
+			virtual SQLULEN size() const { return IntervalParam::size(); }
+			virtual void * rwDataAddress() { return &data; }
+			virtual operator boost::posix_time::time_duration () const;
+			virtual const Param * meAsAParam() const { return this; }
+			virtual void apply(DB::HandleField &) const;
+	};
 	class TimeStampColumn : public Column, public TimeStampParam {
 		public:
 			TimeStampColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
@@ -109,8 +121,7 @@ namespace ODBC {
 			virtual SQLSMALLINT ctype() const { return TimeStampParam::ctype(); }
 			virtual SQLULEN size() const { return TimeStampParam::size(); }
 			virtual void * rwDataAddress() { return &data; }
-			virtual operator struct tm () const;
-			virtual operator SQL_TIMESTAMP_STRUCT () const { return data; }
+			virtual operator boost::posix_time::ptime () const;
 			virtual const Param * meAsAParam() const { return this; }
 			virtual void apply(DB::HandleField &) const;
 	};

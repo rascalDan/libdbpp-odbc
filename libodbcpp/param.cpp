@@ -74,9 +74,8 @@ SIMPLEBINDER(float, FloatingPointParam, F);
 
 SIMPLEBINDER(const Glib::ustring &, GlibUstringParam, S);
 
-SIMPLEBINDER(const struct tm *, TimeStampParam, T);
-SIMPLEBINDER(const SQL_TIMESTAMP_STRUCT &, TimeStampParam, T);
-SIMPLEBINDER(time_t, TimeStampParam, T);
+SIMPLEBINDER(const boost::posix_time::ptime &, TimeStampParam, T);
+SIMPLEBINDER(const boost::posix_time::time_duration &, IntervalParam, T);
 
 void
 ODBC::Command::bindNull(unsigned int i)
@@ -98,10 +97,26 @@ ODBC::GlibUstringParam::operator=(Glib::ustring const & d)
 }
 
 void
-ODBC::TimeStampParam::operator=(time_t const & d)
+ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
 {
-	struct tm t;
-	gmtime_r(&d, &t);
-	data << t;
+	data.year = d.date().year();
+	data.month = d.date().month();
+	data.day = d.date().day();
+	data.hour = d.time_of_day().hours();
+	data.minute = d.time_of_day().minutes();
+	data.second = d.time_of_day().seconds();
+	data.fraction = d.time_of_day().fractional_seconds();
+}
+
+void
+ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
+{
+	data.interval_type = SQL_IS_DAY_TO_SECOND;
+	data.interval_sign = d.is_negative();
+	data.intval.day_second.day = d.hours() / 24;
+	data.intval.day_second.hour = d.hours() % 24;
+	data.intval.day_second.minute = d.minutes();
+	data.intval.day_second.second = d.seconds();
+	data.intval.day_second.fraction = d.fractional_seconds();
 }
 

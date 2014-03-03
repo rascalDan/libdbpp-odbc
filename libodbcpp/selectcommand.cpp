@@ -113,9 +113,24 @@ ODBC::SelectCommand::execute()
 			case SQL_BIGINT:
 				columns[col] = new SignedIntegerColumn(this, colName, col);
 				break;
+			case SQL_TYPE_TIME:
+			case SQL_INTERVAL_YEAR:
+			case SQL_INTERVAL_MONTH:
+			case SQL_INTERVAL_DAY:
+			case SQL_INTERVAL_HOUR:
+			case SQL_INTERVAL_MINUTE:
+			case SQL_INTERVAL_SECOND:
+			case SQL_INTERVAL_YEAR_TO_MONTH:
+			case SQL_INTERVAL_DAY_TO_HOUR:
+			case SQL_INTERVAL_DAY_TO_MINUTE:
+			case SQL_INTERVAL_DAY_TO_SECOND:
+			case SQL_INTERVAL_HOUR_TO_MINUTE:
+			case SQL_INTERVAL_HOUR_TO_SECOND:
+			case SQL_INTERVAL_MINUTE_TO_SECOND:
+				columns[col] = new IntervalColumn(this, colName, col);
+				break;
 			case SQL_TIMESTAMP:
 			case SQL_DATETIME:
-			case SQL_TYPE_TIME:
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
 				columns[col] = new TimeStampColumn(this, colName, col);

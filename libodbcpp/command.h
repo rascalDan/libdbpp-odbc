@@ -26,9 +26,8 @@ namespace ODBC {
 
 			void				bindParamS(unsigned int i, const Glib::ustring &);
 
-			void				bindParamT(unsigned int i, const struct tm *);
-			void				bindParamT(unsigned int i, const SQL_TIMESTAMP_STRUCT &);
-			void				bindParamT(unsigned int i, time_t);
+			void				bindParamT(unsigned int i, const boost::posix_time::time_duration &);
+			void				bindParamT(unsigned int i, const boost::posix_time::ptime &);
 
 			void				bindNull(unsigned int i);
 

@@ -17,8 +17,5 @@ namespace ODBC {
 	};
 }
 
-void operator << (SQL_TIMESTAMP_STRUCT & target, const struct tm &);
-void operator << (struct tm &, const SQL_TIMESTAMP_STRUCT & target);
-
 #endif
 
