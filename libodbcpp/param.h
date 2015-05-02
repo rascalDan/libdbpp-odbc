@@ -98,8 +98,8 @@ namespace ODBC {
 			IntervalParam() : Param() { }
 			IntervalParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const { return SQL_C_INTERVAL_DAY_TO_SECOND; }
-			virtual SQLSMALLINT stype() const { return SQL_INTERVAL; }
-			virtual SQLULEN size() const { return sizeof(SQL_INTERVAL); }
+			virtual SQLSMALLINT stype() const { return SQL_INTERVAL_DAY_TO_SECOND; }
+			virtual SQLULEN size() const { return sizeof(SQL_INTERVAL_STRUCT); }
 			virtual SQLINTEGER dp() const { return boost::posix_time::time_res_traits::num_fractional_digits(); }
 			virtual const void * dataAddress() const { return &data; }
 			void operator=(const boost::posix_time::time_duration & d);
