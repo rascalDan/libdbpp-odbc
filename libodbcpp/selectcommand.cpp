@@ -130,6 +130,8 @@ ODBC::SelectCommand::execute()
 			case SQL_TYPE_TIMESTAMP:
 				ncol = *columns.insert(DB::ColumnPtr(new TimeStampColumn(this, colName, col))).first;
 				break;
+			case SQL_UNKNOWN_TYPE:
+				throw Error("Unknown column type");
 			default:
 				ncol = *columns.insert(DB::ColumnPtr(new CharArrayColumn(this, colName, col, bindSize))).first;
 				break;
