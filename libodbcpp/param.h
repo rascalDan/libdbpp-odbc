@@ -28,6 +28,19 @@ namespace ODBC {
 			SQLLEN dataLength;
 	};
 
+	class BooleanParam : public Param {
+		public:
+			BooleanParam() : Param() { }
+			BooleanParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
+			virtual SQLSMALLINT ctype() const { return SQL_C_BIT; }
+			virtual SQLSMALLINT stype() const { return SQL_C_BIT; }
+			virtual SQLULEN size() const { return sizeof(SQLINTEGER); }
+			virtual SQLINTEGER dp() const { return 0; }
+			virtual const void * dataAddress() const { return &data; }
+			void operator=(const SQLINTEGER & d) { data = d; }
+		protected:
+			SQLINTEGER data;
+	};
 	class SignedIntegerParam : public Param {
 		public:
 			SignedIntegerParam() : Param() { }

@@ -69,6 +69,8 @@ SIMPLEBINDER(unsigned int, UnsignedIntegerParam, I);
 SIMPLEBINDER(unsigned long int, UnsignedIntegerParam, I);
 SIMPLEBINDER(unsigned long long int, UnsignedIntegerParam, I);
 
+SIMPLEBINDER(bool, BooleanParam, B);
+
 SIMPLEBINDER(double, FloatingPointParam, F);
 SIMPLEBINDER(float, FloatingPointParam, F);
 

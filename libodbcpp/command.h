@@ -21,6 +21,8 @@ namespace ODBC {
 			void				bindParamI(unsigned int i, unsigned long int val);
 			void				bindParamI(unsigned int i, unsigned long long int val);
 
+			void				bindParamB(unsigned int i, bool val);
+
 			void				bindParamF(unsigned int i, double val);
 			void				bindParamF(unsigned int i, float val);
 
