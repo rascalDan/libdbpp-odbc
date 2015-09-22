@@ -4,6 +4,8 @@
 #include <sqlext.h>
 #include <stdio.h>
 #include <string.h>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
 	DB::Command(s),
@@ -14,7 +16,7 @@ ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) 
 
 ODBC::SelectCommand::~SelectCommand()
 {
-	if (columns.size()) {
+	if (!columns->empty()) {
 		RETCODE rc = SQLCloseCursor(hStmt);
 		if (!SQL_SUCCEEDED(rc)) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::~SelectCommand SQLCloseCursor");
@@ -31,7 +33,7 @@ ODBC::SelectCommand::fetch()
 bool
 ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
-	if (columns.empty()) {
+	if (columns->empty()) {
 		execute();
 	}
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
@@ -43,7 +45,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
-						for (Columns::iterator i = columns.begin(); i != columns.end(); ++i) {
+						for (Columns::iterator i = columns->begin(); i != columns->end(); ++i) {
 							boost::dynamic_pointer_cast<Column>(*i)->resize();
 						}
 						return fetch(SQL_FETCH_RELATIVE, 0);
@@ -56,7 +58,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 		case SQL_SUCCESS:
 			{
 				bool resized = false;
-				for (Columns::iterator i = columns.begin(); i != columns.end(); ++i) {
+				for (Columns::iterator i = columns->begin(); i != columns->end(); ++i) {
 					resized |= boost::dynamic_pointer_cast<Column>(*i)->resize();
 				}
 				if (resized) {
@@ -72,7 +74,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 void
 ODBC::SelectCommand::execute()
 {
-	RETCODE rc = SQLExecute(hStmt); 
+	RETCODE rc = SQLExecute(hStmt);
 	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLExecute");
 	}
@@ -100,13 +102,13 @@ ODBC::SelectCommand::execute()
 			case SQL_REAL:
 			case SQL_FLOAT:
 			case SQL_DOUBLE:
-				ncol = *columns.insert(DB::ColumnPtr(new FloatingPointColumn(this, colName, col))).first;
+				ncol = insertColumn(DB::ColumnPtr(new FloatingPointColumn(this, colName, col)));
 				break;
 			case SQL_SMALLINT:
 			case SQL_INTEGER:
 			case SQL_TINYINT:
 			case SQL_BIGINT:
-				ncol = *columns.insert(DB::ColumnPtr(new SignedIntegerColumn(this, colName, col))).first;
+				ncol = insertColumn(DB::ColumnPtr(new SignedIntegerColumn(this, colName, col)));
 				break;
 			case SQL_TYPE_TIME:
 			case SQL_INTERVAL_YEAR:
@@ -122,18 +124,18 @@ ODBC::SelectCommand::execute()
 			case SQL_INTERVAL_HOUR_TO_MINUTE:
 			case SQL_INTERVAL_HOUR_TO_SECOND:
 			case SQL_INTERVAL_MINUTE_TO_SECOND:
-				ncol = *columns.insert(DB::ColumnPtr(new IntervalColumn(this, colName, col))).first;
+				ncol = insertColumn(DB::ColumnPtr(new IntervalColumn(this, colName, col)));
 				break;
 			case SQL_TIMESTAMP:
 			case SQL_DATETIME:
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
-				ncol = *columns.insert(DB::ColumnPtr(new TimeStampColumn(this, colName, col))).first;
+				ncol = insertColumn(DB::ColumnPtr(new TimeStampColumn(this, colName, col)));
 				break;
 			case SQL_UNKNOWN_TYPE:
 				throw Error("Unknown column type");
 			default:
-				ncol = *columns.insert(DB::ColumnPtr(new CharArrayColumn(this, colName, col, bindSize))).first;
+				ncol = insertColumn(DB::ColumnPtr(new CharArrayColumn(this, colName, col, bindSize)));
 				break;
 		};
 		boost::dynamic_pointer_cast<Column>(ncol)->bind();
