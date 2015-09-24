@@ -8,6 +8,8 @@
 #include "modifycommand.h"
 #include "error.h"
 
+NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory);
+
 ODBC::Connection::Connection(const DSN& d) :
 	env(0),
 	conn(0),

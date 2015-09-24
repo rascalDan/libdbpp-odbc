@@ -5,14 +5,18 @@ alias glibmm : : : :
 
 lib odbc : : <name>odbc ;
 
-lib odbcpp :
+lib dbpp-odbc :
 	[ glob *.cpp ] :
-	<cflags>-fPIC
 	<library>glibmm 
 	<library>odbc 
 	<library>../libdbpp
+	<cflags>-fvisibility=hidden
+	<variant>release:<cflags>-flto
 	: :
 	<include>.
 	<library>glibmm 
 	<library>../libdbpp
 	;
+
+build-project unittests ;
+
