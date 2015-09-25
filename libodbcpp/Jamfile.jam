@@ -1,22 +1,32 @@
+import package ;
 alias glibmm : : : :
 	<cflags>"`pkg-config --cflags glibmm-2.4`"
 	<linkflags>"`pkg-config --libs glibmm-2.4`"
 	;
 
 lib odbc : : <name>odbc ;
+lib adhocutil : : : : <include>/usr/include/adhocutil ;
+lib dbppcore : : : : <include>/usr/include/dbpp ;
+lib boost_date_time ;
+lib boost_system ;
 
 lib dbpp-odbc :
 	[ glob *.cpp ] :
-	<library>glibmm 
-	<library>odbc 
-	<library>../libdbpp
+	<library>glibmm
+	<library>odbc
+	<library>adhocutil
+	<library>dbppcore
+	<library>boost_date_time
+	<library>boost_system
 	<cflags>-fvisibility=hidden
 	<variant>release:<cflags>-flto
 	: :
 	<include>.
-	<library>glibmm 
-	<library>../libdbpp
+	<library>glibmm
+	<library>dbppcore
 	;
 
 build-project unittests ;
+
+package.install install : <install-source-root>. : : dbpp-odbc : [ glob *.h ] ;
 

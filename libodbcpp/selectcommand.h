@@ -1,7 +1,7 @@
 #ifndef ODBC_SELECTCOMMAND_H
 #define ODBC_SELECTCOMMAND_H
 
-#include "../libdbpp/selectcommand.h"
+#include <selectcommand.h>
 #include "command.h"
 
 namespace ODBC {

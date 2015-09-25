@@ -2,9 +2,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <definedDirs.h>
-#include <modifycommand.h>
-#include <selectcommand.h>
-#include <column.h>
+#include <dbpp/modifycommand.h>
+#include <dbpp/selectcommand.h>
+#include <dbpp/column.h>
+#include <dbpp/error.h>
 #include <mock.h>
 #include <testCore.h>
 #include <definedDirs.h>

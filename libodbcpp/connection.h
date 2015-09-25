@@ -1,8 +1,8 @@
 #ifndef ODBC_CONNECTION_H
 #define ODBC_CONNECTION_H
 
-#include "../libdbpp/connection.h"
-#include "../libdbpp/error.h"
+#include <connection.h>
+#include <error.h>
 #include "dsn.h"
 #include "error.h"
 #include <sql.h>

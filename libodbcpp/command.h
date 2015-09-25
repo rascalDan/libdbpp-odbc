@@ -1,7 +1,7 @@
 #ifndef ODBC_COMMAND_H
 #define ODBC_COMMAND_H
 
-#include "../libdbpp/command.h"
+#include <command.h>
 #include <vector>
 #include "connection.h"
 #include <glibmm/ustring.h>

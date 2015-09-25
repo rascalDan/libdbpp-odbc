@@ -1,7 +1,7 @@
 #ifndef ODBC_COLUMN_H
 #define ODBC_COLUMN_H
 
-#include "../libdbpp/column.h"
+#include <column.h>
 #include <typeinfo>
 #include <glibmm/ustring.h>
 #include <algorithm>

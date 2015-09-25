@@ -4,7 +4,7 @@
 #include <sql.h>
 #include <stdlib.h>
 #include <exception>
-#include "../libdbpp/error.h"
+#include <error.h>
 
 namespace ODBC {
 	class Error : public DB::Error {

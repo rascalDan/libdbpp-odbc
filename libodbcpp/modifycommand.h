@@ -1,7 +1,7 @@
 #ifndef ODBC_MODIFYCOMMAND_H
 #define ODBC_MODIFYCOMMAND_H
 
-#include "../libdbpp/modifycommand.h"
+#include <modifycommand.h>
 #include "command.h"
 
 namespace ODBC {
