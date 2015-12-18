@@ -19,7 +19,6 @@ lib dbpp-odbc :
 	<library>boost_date_time
 	<library>boost_system
 	<cflags>-fvisibility=hidden
-	<variant>release:<cflags>-flto
 	: :
 	<include>.
 	<library>glibmm
