@@ -1,8 +1,4 @@
 import package ;
-alias glibmm : : : :
-	<cflags>"`pkg-config --cflags glibmm-2.4`"
-	<linkflags>"`pkg-config --libs glibmm-2.4`"
-	;
 
 lib odbc : : <name>odbc ;
 lib adhocutil : : : : <include>/usr/include/adhocutil ;
@@ -12,7 +8,7 @@ lib boost_system ;
 
 lib dbpp-odbc :
 	[ glob *.cpp ] :
-	<library>glibmm
+	<library>..//glibmm
 	<library>odbc
 	<library>adhocutil
 	<library>dbppcore
@@ -21,7 +17,7 @@ lib dbpp-odbc :
 	<cflags>-fvisibility=hidden
 	: :
 	<include>.
-	<library>glibmm
+	<library>..//glibmm
 	<library>dbppcore
 	;
 
