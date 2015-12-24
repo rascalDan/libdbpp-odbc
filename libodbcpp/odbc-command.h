@@ -3,7 +3,7 @@
 
 #include <command.h>
 #include <vector>
-#include "connection.h"
+#include "odbc-connection.h"
 #include <glibmm/ustring.h>
 
 namespace ODBC {

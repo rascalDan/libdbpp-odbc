@@ -2,7 +2,7 @@
 #define ODBC_SELECTCOMMAND_H
 
 #include <selectcommand.h>
-#include "command.h"
+#include "odbc-command.h"
 
 namespace ODBC {
 	class Column;

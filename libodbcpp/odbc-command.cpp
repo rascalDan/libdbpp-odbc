@@ -1,6 +1,6 @@
-#include "command.h"
-#include "error.h"
-#include "param.h"
+#include "odbc-command.h"
+#include "odbc-error.h"
+#include "odbc-param.h"
 #include <sqlext.h>
 
 ODBC::Command::Command(const Connection & c, const std::string & s) :

@@ -1,5 +1,5 @@
-#include "connection.h"
-#include "mock.h"
+#include "odbc-connection.h"
+#include "odbc-mock.h"
 #include <buffer.h>
 
 namespace ODBC {

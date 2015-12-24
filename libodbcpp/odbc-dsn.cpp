@@ -1,4 +1,4 @@
-#include "dsn.h"
+#include "odbc-dsn.h"
 
 ODBC::DSN::DSN(const std::string & d, const std::string & u, const std::string & p) :
 	dsn(d),

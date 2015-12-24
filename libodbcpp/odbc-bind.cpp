@@ -1,4 +1,4 @@
-#include "bind.h"
+#include "odbc-bind.h"
 
 ODBC::Bind::Bind()
 {

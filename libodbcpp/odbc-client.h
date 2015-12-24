@@ -1,0 +1,7 @@
+#include "odbc-column.h"
+#include "odbc-command.h"
+#include "odbc-connection.h"
+#include "odbc-dsn.h"
+#include "odbc-modifycommand.h"
+#include "odbc-param.h"
+#include "odbc-selectcommand.h"

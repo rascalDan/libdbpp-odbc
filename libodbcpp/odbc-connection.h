@@ -3,8 +3,8 @@
 
 #include <connection.h>
 #include <error.h>
-#include "dsn.h"
-#include "error.h"
+#include "odbc-dsn.h"
+#include "odbc-error.h"
 #include <sql.h>
 
 namespace ODBC {

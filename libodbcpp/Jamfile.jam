@@ -23,5 +23,5 @@ lib dbpp-odbc :
 
 build-project unittests ;
 
-package.install install : <install-source-root>. : : dbpp-odbc : [ glob *.h ] ;
+package.install install : <install-source-root>. : : dbpp-odbc : [ glob odbc-*.h ] ;
 

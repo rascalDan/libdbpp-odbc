@@ -6,7 +6,7 @@
 #include <dbpp/selectcommand.h>
 #include <dbpp/column.h>
 #include <dbpp/error.h>
-#include <mock.h>
+#include <odbc-mock.h>
 #include <testCore.h>
 #include <definedDirs.h>
 #include <boost/date_time/posix_time/posix_time.hpp>

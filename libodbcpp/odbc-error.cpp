@@ -4,7 +4,7 @@
 #include <malloc.h>
 #include <time.h>
 #include <string.h>
-#include "error.h"
+#include "odbc-error.h"
 
 static
 void

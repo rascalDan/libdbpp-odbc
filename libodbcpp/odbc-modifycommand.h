@@ -2,7 +2,7 @@
 #define ODBC_MODIFYCOMMAND_H
 
 #include <modifycommand.h>
-#include "command.h"
+#include "odbc-command.h"
 
 namespace ODBC {
 	class ModifyCommand : public Command, public DB::ModifyCommand {

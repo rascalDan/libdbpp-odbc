@@ -3,9 +3,9 @@
 #include <syslog.h>
 #include <stdio.h>
 #include <string.h>
-#include "connection.h"
-#include "selectcommand.h"
-#include "modifycommand.h"
+#include "odbc-connection.h"
+#include "odbc-selectcommand.h"
+#include "odbc-modifycommand.h"
 #include "error.h"
 
 NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory);

@@ -1,7 +1,7 @@
 #include <sqlext.h>
-#include "param.h"
-#include "command.h"
-#include "error.h"
+#include "odbc-param.h"
+#include "odbc-command.h"
+#include "odbc-error.h"
 #include <string.h>
 
 ODBC::Param::Param() :

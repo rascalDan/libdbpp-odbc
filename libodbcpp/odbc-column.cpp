@@ -1,10 +1,10 @@
 #include <sqlext.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "column.h"
-#include "command.h"
-#include "selectcommand.h"
-#include "error.h"
+#include "odbc-column.h"
+#include "odbc-command.h"
+#include "odbc-selectcommand.h"
+#include "odbc-error.h"
 
 ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i) :
 	DB::Column(s, i),

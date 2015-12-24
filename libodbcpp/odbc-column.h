@@ -5,8 +5,8 @@
 #include <typeinfo>
 #include <glibmm/ustring.h>
 #include <algorithm>
-#include "bind.h"
-#include "param.h"
+#include "odbc-bind.h"
+#include "odbc-param.h"
 
 namespace ODBC {
 	class SelectCommand;

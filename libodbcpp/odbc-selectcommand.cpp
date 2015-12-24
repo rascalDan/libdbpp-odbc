@@ -1,6 +1,6 @@
-#include "selectcommand.h"
-#include "error.h"
-#include "column.h"
+#include "odbc-selectcommand.h"
+#include "odbc-error.h"
+#include "odbc-column.h"
 #include <sqlext.h>
 #include <stdio.h>
 #include <string.h>
