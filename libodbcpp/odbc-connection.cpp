@@ -245,16 +245,3 @@ ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLH
 {
 }
 
-void ODBC::Connection::beginBulkUpload(const char *, const char *) const
-{
-	throw DB::BulkUploadNotSupported();
-}
-void ODBC::Connection::endBulkUpload(const char *) const
-{
-	throw DB::BulkUploadNotSupported();
-}
-size_t ODBC::Connection::bulkUploadData(const char *, size_t) const
-{
-	throw DB::BulkUploadNotSupported();
-}
-
