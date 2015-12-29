@@ -45,14 +45,6 @@ ODBC::Column::isNull() const
 }
 
 void
-ODBC::Column::rebind(DB::Command * cmd, unsigned int idx) const
-{
-	meAsAParam()->paramCmd = dynamic_cast<ODBC::Command *>(cmd);
-	meAsAParam()->paramIdx = idx;
-	meAsAParam()->bind();
-}
-
-void
 ODBC::Column::bind()
 {
 	RETCODE rc = SQLBindCol(selectCmd->hStmt, colNo + 1, ctype(), rwDataAddress(), size(), &bindLen);

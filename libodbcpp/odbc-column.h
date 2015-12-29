@@ -16,7 +16,6 @@ namespace ODBC {
 			virtual ~Column() = 0;
 			void bind();
 			virtual void * rwDataAddress() = 0;
-			void rebind(DB::Command *, unsigned int idx) const;
 			virtual bool resize();
 
 			virtual operator int () const { throw std::bad_cast(); }
