@@ -3,21 +3,18 @@
 
 #include <sql.h>
 #include <stdlib.h>
-#include <exception>
+#include <exception.h>
 #include <error.h>
 
 namespace ODBC {
-	class Error : public DB::Error {
+	class Error : public AdHoc::Exception<DB::Error> {
 		public:
-			Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * action);
-			Error(char const * action);
-			~Error() throw();
+			Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle);
 
-			const char * what() const throw();
-		protected:
-			Error(char * msg);
+			std::string message() const throw() override;
+
 		private:
-			char * msg;
+			std::string msg;
 	};
 }
 

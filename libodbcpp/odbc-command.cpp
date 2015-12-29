@@ -9,23 +9,23 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);
 	if (!SQL_SUCCEEDED(rc)) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Allocate statement handle");
+		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	rc = SQLSetStmtAttr(hStmt, SQL_ATTR_CURSOR_TYPE, (SQLPOINTER)SQL_CURSOR_DYNAMIC, 0);
 	if (!SQL_SUCCEEDED(rc)) {
-		throw ConnectionError(rc, SQL_HANDLE_STMT, hStmt, "Set scrollable cursor");
+		throw ConnectionError(rc, SQL_HANDLE_STMT, hStmt);
 	}
-    rc = SQLPrepare(hStmt, (SQLCHAR*)sql.c_str(), sql.length());
-    if (!SQL_SUCCEEDED(rc)) {
-        SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Prepare statement");
-    }
+	rc = SQLPrepare(hStmt, (SQLCHAR*)sql.c_str(), sql.length());
+	if (!SQL_SUCCEEDED(rc)) {
+		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+		throw Error(rc, SQL_HANDLE_STMT, hStmt);
+	}
 	SQLSMALLINT pcount;
-    rc = SQLNumParams(hStmt, &pcount);
-    if (!SQL_SUCCEEDED(rc)) {
-        SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "Parameter count");
-    }
+	rc = SQLNumParams(hStmt, &pcount);
+	if (!SQL_SUCCEEDED(rc)) {
+		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+		throw Error(rc, SQL_HANDLE_STMT, hStmt);
+	}
 	params.resize(pcount);
 }
 

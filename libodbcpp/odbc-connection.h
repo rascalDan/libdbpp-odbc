@@ -8,6 +8,11 @@
 #include <sql.h>
 
 namespace ODBC {
+	class ConnectionError : public virtual Error, public virtual DB::ConnectionError {
+		public:
+			ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle);
+	};
+
 	class Connection : public DB::Connection {
 		public:
 			Connection(const DSN& d);
@@ -44,11 +49,6 @@ namespace ODBC {
 			void			connectPost();
 			mutable unsigned int	txDepth;
 			mutable bool			txAborted;
-	};
-	class ConnectionError : public DB::ConnectionError, public virtual Error {
-		public:
-			ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * stage);
-			ConnectionError(const ConnectionError &);
 	};
 }
 

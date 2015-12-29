@@ -1,6 +1,5 @@
 #include <sqlext.h>
 #include <stdexcept>
-#include <syslog.h>
 #include <stdio.h>
 #include <string.h>
 #include "odbc-connection.h"
@@ -22,7 +21,7 @@ ODBC::Connection::Connection(const DSN& d) :
 	RETCODE dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
 			(SQLCHAR*)d.username.c_str(), SQL_NTS, (SQLCHAR*)d.password.c_str(), SQL_NTS);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	connectPost();
 }
@@ -32,22 +31,22 @@ ODBC::Connection::connectPre()
 {
 	SQLRETURN dberr = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate handle");
+		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
 	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set ODBC version");
+		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
 	dberr = SQLAllocHandle(SQL_HANDLE_DBC, env, &conn);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Allocate DBC handle");
+		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
 	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_ENV, env, "Set connection attributes");
+		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 }
 
@@ -56,12 +55,12 @@ ODBC::Connection::connectPost()
 {
 	RETCODE dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	char info[1024];
 	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, (SQLCHAR*)info, sizeof(info), NULL);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Get info");
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	// Apply known DB specific tweaks
 	if (strstr(info, "myodbc") != NULL) {
@@ -81,7 +80,7 @@ ODBC::Connection::Connection(const std::string & s) :
 	connectPre();
 	RETCODE dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn, "Connect");
+		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	connectPost();
 }
@@ -89,17 +88,11 @@ ODBC::Connection::Connection(const std::string & s) :
 ODBC::Connection::~Connection()
 {
 	if (conn) {
-		if (!SQL_SUCCEEDED(SQLDisconnect(conn))) {
-			syslog(LOG_WARNING, "%s: Disconnect error", __FUNCTION__);
-		}
-		if (!SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_DBC, conn))) {
-			syslog(LOG_WARNING, "%s: Free connection handle error", __FUNCTION__);
-		}
+		SQL_SUCCEEDED(SQLDisconnect(conn));
+		SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_DBC, conn));
 	}
 	if (env) {
-		if (!SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_ENV, env))) {
-			syslog(LOG_WARNING, "%s: Free connection handle error", __FUNCTION__);
-		}
+		SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_ENV, env));
 	}
 }
 
@@ -108,7 +101,7 @@ ODBC::Connection::finish() const
 {
 	if (txDepth != 0) {
 		rollbackTx();
-		throw Error("Transaction still open");
+		throw DB::TransactionStillOpen();
 	}
 }
 
@@ -118,7 +111,7 @@ ODBC::Connection::beginTx() const
 	if (txDepth == 0) {
 		SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
 		if (!SQL_SUCCEEDED(dberr)) {
-			throw Error(dberr, SQL_HANDLE_DBC, conn, "Set default auto commit");
+			throw Error(dberr, SQL_HANDLE_DBC, conn);
 		}
 	}
 	txDepth += 1;
@@ -136,17 +129,17 @@ ODBC::Connection::commitTx() const
 		if (txDepth == 0) {
 			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_COMMIT);
 			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn, "SQLEndTran (SQL_COMMIT)");
+				throw Error(dberr, SQL_HANDLE_DBC, conn);
 			}
 			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
 			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn, "Enable auto commit");
+				throw Error(dberr, SQL_HANDLE_DBC, conn);
 			}
 			txAborted = false;
 		}
 		return txDepth;
 	}
-	throw Error("Attempt to commit none existant transaction");
+	throw DB::TransactionRequired();
 }
 
 int
@@ -157,17 +150,17 @@ ODBC::Connection::rollbackTx() const
 		if (txDepth == 0) {
 			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_ROLLBACK);
 			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn, "SQLEndTran (SQL_ROLLBACK)");
+				throw Error(dberr, SQL_HANDLE_DBC, conn);
 			}
 			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
 			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn, "Enable auto commit");
+			throw Error(dberr, SQL_HANDLE_DBC, conn);
 			}
 			txAborted = false;
 		}
 		return txDepth;
 	}
-	throw Error("Attempt to rollback none existant transaction");
+	throw DB::TransactionRequired();
 }
 
 void
@@ -220,7 +213,7 @@ ODBC::Connection::getAttrStr(SQLINTEGER attr) const
 	SQLINTEGER size = 0;
 	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, (unsigned char *)rtn.c_str(), BUFSIZ, &size);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "ODBC::Connection::getAttrStr SQLGetConnectAttr");
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn);
 	}
 	rtn.resize(size);
 	return rtn;
@@ -232,7 +225,7 @@ ODBC::Connection::getAttrInt(SQLINTEGER attr) const
 	SQLINTEGER result;
 	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
 	if (!SQL_SUCCEEDED(dberr)) {
-		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn, "ODBC::Connection::getAttrInt SQLGetConnectAttr");
+		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn);
 	}
 	return result;
 }
@@ -242,32 +235,26 @@ ODBC::Connection::ping() const
 {
 	SQLINTEGER dead = getAttrInt(SQL_ATTR_CONNECTION_DEAD);
 	if (dead != SQL_CD_FALSE) {
-		throw ODBC::Error("Connection is dead");
+		throw ODBC::ConnectionError(0, SQL_HANDLE_DBC, conn);
 	}
 }
 
-ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle, char const * stage) :
-	ODBC::Error(err, handletype, handle, stage),
+ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle) :
+	ODBC::Error(err, handletype, handle),
 	DB::ConnectionError()
-{
-}
-
-ODBC::ConnectionError::ConnectionError(const ConnectionError & e) :
-	ODBC::Error(strdup(e.what())),
-	DB::ConnectionError(e.FailureTime)
 {
 }
 
 void ODBC::Connection::beginBulkUpload(const char *, const char *) const
 {
-	throw std::runtime_error("Not implemented");
+	throw DB::BulkUploadNotSupported();
 }
 void ODBC::Connection::endBulkUpload(const char *) const
 {
-	throw std::runtime_error("Not implemented");
+	throw DB::BulkUploadNotSupported();
 }
 size_t ODBC::Connection::bulkUploadData(const char *, size_t) const
 {
-	throw std::runtime_error("Not implemented");
+	throw DB::BulkUploadNotSupported();
 }
 

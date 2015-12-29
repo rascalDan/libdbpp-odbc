@@ -19,7 +19,7 @@ ODBC::SelectCommand::~SelectCommand()
 	if (!columns->empty()) {
 		RETCODE rc = SQLCloseCursor(hStmt);
 		if (!SQL_SUCCEEDED(rc)) {
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::~SelectCommand SQLCloseCursor");
+			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
 	}
 }
@@ -52,7 +52,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 					}
 				}
 				if (rc != SQL_SUCCESS_WITH_INFO) {
-					throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::fetch SQLFetch");
+					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
 			}
 		case SQL_SUCCESS:
@@ -76,14 +76,11 @@ ODBC::SelectCommand::execute()
 {
 	RETCODE rc = SQLExecute(hStmt);
 	if (!SQL_SUCCEEDED(rc)) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLExecute");
+		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	SQLSMALLINT colCount;
 	if (!SQL_SUCCEEDED(rc = SQLNumResultCols(hStmt, &colCount))) {
-		throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLNumResultCols");
-	}
-	if (colCount < 1) {
-		throw Error("ODBC::SelectCommand::execute No result columns");
+		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	for (int col = 0; col < colCount; col++) {
 		SQLCHAR _colName[300];
@@ -92,7 +89,7 @@ ODBC::SelectCommand::execute()
 		int sqlcol = col + 1;
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
 						&bindSize, &dp, &nullable))) {
-			throw Error(rc, SQL_HANDLE_STMT, hStmt, "ODBC::SelectCommand::execute SQLDescribeCol for %d");
+			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
 		Glib::ustring colName((const char *)_colName, nameLen);
 		DB::ColumnPtr ncol;
@@ -133,7 +130,7 @@ ODBC::SelectCommand::execute()
 				ncol = insertColumn(DB::ColumnPtr(new TimeStampColumn(this, colName, col)));
 				break;
 			case SQL_UNKNOWN_TYPE:
-				throw Error("Unknown column type");
+				throw DB::ColumnTypeNotSupported();
 			default:
 				ncol = insertColumn(DB::ColumnPtr(new CharArrayColumn(this, colName, col, bindSize)));
 				break;
