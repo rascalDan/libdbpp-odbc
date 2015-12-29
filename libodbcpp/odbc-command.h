@@ -14,30 +14,31 @@ namespace ODBC {
 			Command(const Connection &, const std::string & sql);
 			virtual ~Command() = 0;
 
-			void				bindParamI(unsigned int i, int val);
-			void				bindParamI(unsigned int i, long val);
-			void				bindParamI(unsigned int i, long long val);
-			void				bindParamI(unsigned int i, unsigned int val);
-			void				bindParamI(unsigned int i, unsigned long int val);
-			void				bindParamI(unsigned int i, unsigned long long int val);
+			void				bindParamI(unsigned int i, int val) override;
+			void				bindParamI(unsigned int i, long val) override;
+			void				bindParamI(unsigned int i, long long val) override;
+			void				bindParamI(unsigned int i, unsigned int val) override;
+			void				bindParamI(unsigned int i, unsigned long int val) override;
+			void				bindParamI(unsigned int i, unsigned long long int val) override;
 
-			void				bindParamB(unsigned int i, bool val);
+			void				bindParamB(unsigned int i, bool val) override;
 
-			void				bindParamF(unsigned int i, double val);
-			void				bindParamF(unsigned int i, float val);
+			void				bindParamF(unsigned int i, double val) override;
+			void				bindParamF(unsigned int i, float val) override;
 
-			void				bindParamS(unsigned int i, const Glib::ustring &);
+			void				bindParamS(unsigned int i, const Glib::ustring &) override;
 
-			void				bindParamT(unsigned int i, const boost::posix_time::time_duration &);
-			void				bindParamT(unsigned int i, const boost::posix_time::ptime &);
+			void				bindParamT(unsigned int i, const boost::posix_time::time_duration &) override;
+			void				bindParamT(unsigned int i, const boost::posix_time::ptime &) override;
 
-			void				bindNull(unsigned int i);
+			void				bindNull(unsigned int i) override;
 
 		protected:
 			friend class Param;
 			friend class Column;
 			SQLHSTMT        	hStmt;
 			const Connection&	connection;
+
 		private:
 			Params				params;
 

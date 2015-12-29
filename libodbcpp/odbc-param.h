@@ -32,11 +32,11 @@ namespace ODBC {
 		public:
 			BooleanParam() : Param() { }
 			BooleanParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_BIT; }
-			virtual SQLSMALLINT stype() const { return SQL_C_BIT; }
-			virtual SQLULEN size() const { return sizeof(SQLINTEGER); }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_BIT; }
+			virtual SQLSMALLINT stype() const override { return SQL_C_BIT; }
+			virtual SQLULEN size() const override { return sizeof(SQLINTEGER); }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const SQLINTEGER & d) { data = d; }
 		protected:
 			SQLINTEGER data;
@@ -45,11 +45,11 @@ namespace ODBC {
 		public:
 			SignedIntegerParam() : Param() { }
 			SignedIntegerParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_LONG; }
-			virtual SQLSMALLINT stype() const { return SQL_C_LONG; }
-			virtual SQLULEN size() const { return sizeof(SQLINTEGER); }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_LONG; }
+			virtual SQLSMALLINT stype() const override { return SQL_C_LONG; }
+			virtual SQLULEN size() const override { return sizeof(SQLINTEGER); }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const SQLINTEGER & d) { data = d; }
 		protected:
 			SQLINTEGER data;
@@ -58,11 +58,11 @@ namespace ODBC {
 		public:
 			UnsignedIntegerParam() : Param() { }
 			UnsignedIntegerParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_ULONG; }
-			virtual SQLSMALLINT stype() const { return SQL_C_ULONG; }
-			virtual SQLULEN size() const { return sizeof(SQLUINTEGER); }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_ULONG; }
+			virtual SQLSMALLINT stype() const override { return SQL_C_ULONG; }
+			virtual SQLULEN size() const override { return sizeof(SQLUINTEGER); }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const SQLUINTEGER & d) { data = d; }
 		protected:
 			SQLUINTEGER data;
@@ -71,11 +71,11 @@ namespace ODBC {
 		public:
 			FloatingPointParam() : Param() { }
 			FloatingPointParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_DOUBLE; }
-			virtual SQLSMALLINT stype() const { return SQL_C_DOUBLE; }
-			virtual SQLULEN size() const { return sizeof(SQLDOUBLE); }
-			virtual SQLINTEGER dp() const { return 10; }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_DOUBLE; }
+			virtual SQLSMALLINT stype() const override { return SQL_C_DOUBLE; }
+			virtual SQLULEN size() const override { return sizeof(SQLDOUBLE); }
+			virtual SQLINTEGER dp() const override { return 10; }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const SQLDOUBLE & d) { data = d; }
 		protected:
 			SQLDOUBLE data;
@@ -84,11 +84,11 @@ namespace ODBC {
 		public:
 			GlibUstringParam() : Param() { }
 			GlibUstringParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_CHAR; }
-			virtual SQLSMALLINT stype() const { return SQL_CHAR; }
-			virtual SQLULEN size() const { return data.bytes(); }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return data.data(); }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_CHAR; }
+			virtual SQLSMALLINT stype() const override { return SQL_CHAR; }
+			virtual SQLULEN size() const override { return data.bytes(); }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return data.data(); }
 			void operator=(const Glib::ustring & d);
 		protected:
 			Glib::ustring data;
@@ -97,11 +97,11 @@ namespace ODBC {
 		public:
 			IntervalParam() : Param() { }
 			IntervalParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_INTERVAL_DAY_TO_SECOND; }
-			virtual SQLSMALLINT stype() const { return SQL_INTERVAL_DAY_TO_SECOND; }
-			virtual SQLULEN size() const { return sizeof(SQL_INTERVAL_STRUCT); }
-			virtual SQLINTEGER dp() const { return boost::posix_time::time_res_traits::num_fractional_digits(); }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_INTERVAL_DAY_TO_SECOND; }
+			virtual SQLSMALLINT stype() const override { return SQL_INTERVAL_DAY_TO_SECOND; }
+			virtual SQLULEN size() const override { return sizeof(SQL_INTERVAL_STRUCT); }
+			virtual SQLINTEGER dp() const override { return boost::posix_time::time_res_traits::num_fractional_digits(); }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const boost::posix_time::time_duration & d);
 		protected:
 			SQL_INTERVAL_STRUCT data;
@@ -110,11 +110,11 @@ namespace ODBC {
 		public:
 			TimeStampParam() : Param() { }
 			TimeStampParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
-			virtual SQLSMALLINT ctype() const { return SQL_C_TYPE_TIMESTAMP; }
-			virtual SQLSMALLINT stype() const { return SQL_TYPE_TIMESTAMP; }
-			virtual SQLULEN size() const { return sizeof(SQL_TIMESTAMP_STRUCT); }
-			virtual SQLINTEGER dp() const { return boost::posix_time::time_res_traits::num_fractional_digits(); }
-			virtual const void * dataAddress() const { return &data; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_TYPE_TIMESTAMP; }
+			virtual SQLSMALLINT stype() const override { return SQL_TYPE_TIMESTAMP; }
+			virtual SQLULEN size() const override { return sizeof(SQL_TIMESTAMP_STRUCT); }
+			virtual SQLINTEGER dp() const override { return boost::posix_time::time_res_traits::num_fractional_digits(); }
+			virtual const void * dataAddress() const override { return &data; }
 			void operator=(const boost::posix_time::ptime & d);
 		protected:
 			SQL_TIMESTAMP_STRUCT data;
@@ -123,11 +123,11 @@ namespace ODBC {
 		public:
 			NullParam() : Param() { }
 			NullParam(Command * c, unsigned int i) : Param(c, i) { bindLen = SQL_NULL_DATA; }
-			virtual SQLSMALLINT ctype() const { return SQL_C_LONG; }
-			virtual SQLSMALLINT stype() const { return SQL_C_LONG; }
-			virtual SQLULEN size() const { return 0; }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return NULL; }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_LONG; }
+			virtual SQLSMALLINT stype() const override { return SQL_C_LONG; }
+			virtual SQLULEN size() const override { return 0; }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return NULL; }
 	};
 }
 

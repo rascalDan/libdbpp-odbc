@@ -10,7 +10,7 @@ namespace ODBC {
 			ModifyCommand(const Connection &, const std::string & sql);
 			~ModifyCommand();
 			// Execute the command and return effected row count
-			unsigned int		execute(bool allowNoChange = true);
+			unsigned int		execute(bool allowNoChange = true) override;
 	};
 }
 

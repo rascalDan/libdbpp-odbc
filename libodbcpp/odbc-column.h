@@ -34,8 +34,8 @@ namespace ODBC {
 			virtual operator struct tm () const { throw std::bad_cast(); }
 			virtual operator SQL_TIMESTAMP_STRUCT () const { throw std::bad_cast(); }
 
-			bool isNull() const;
-			virtual void apply(DB::HandleField &) const = 0;
+			bool isNull() const override;
+			virtual void apply(DB::HandleField &) const override = 0;
 
 			const SelectCommand *	selectCmd;
 		protected:
@@ -50,19 +50,19 @@ namespace ODBC {
 			{
 				data.resize(std::max<SQLULEN>(sizeHint, 64) + 1);
 			}
-			virtual SQLSMALLINT ctype() const { return SQL_C_CHAR; }
-			virtual SQLSMALLINT stype() const { return SQL_CHAR; }
-			virtual SQLULEN size() const { return data.size(); }
-			virtual SQLINTEGER dp() const { return 0; }
-			virtual const void * dataAddress() const { return &data.front(); }
-			virtual void * rwDataAddress() { return &data.front(); }
+			virtual SQLSMALLINT ctype() const override { return SQL_C_CHAR; }
+			virtual SQLSMALLINT stype() const override { return SQL_CHAR; }
+			virtual SQLULEN size() const override { return data.size(); }
+			virtual SQLINTEGER dp() const override { return 0; }
+			virtual const void * dataAddress() const override { return &data.front(); }
+			virtual void * rwDataAddress() override { return &data.front(); }
 			void operator=(const Glib::ustring & d);
-			bool resize();
-			virtual operator std::string () const { return std::string(&data.front(), bindLen); }
-			virtual operator Glib::ustring () const { return std::string(&data.front(), bindLen); }
-			virtual void apply(DB::HandleField &) const;
+			bool resize() override;
+			virtual operator std::string () const override { return std::string(&data.front(), bindLen); }
+			virtual operator Glib::ustring () const override { return std::string(&data.front(), bindLen); }
+			virtual void apply(DB::HandleField &) const override;
 		protected:
-			virtual const Param * meAsAParam() const { return this; }
+			virtual const Param * meAsAParam() const override { return this; }
 			CharArray data;
 	};
 	class SignedIntegerColumn : public Column, public SignedIntegerParam {
@@ -70,21 +70,21 @@ namespace ODBC {
 			SignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				DB::Column(n, i),
 				Column(sc, n, i) { }
-			virtual SQLSMALLINT ctype() const { return SignedIntegerParam::ctype(); }
-			virtual SQLULEN size() const { return SignedIntegerParam::size(); }
-			virtual void * rwDataAddress() { return &data; }
-			virtual operator int () const { return data; }
-			virtual operator long () const { return data; }
-			virtual operator long long () const { return data; }
-			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(DB::HandleField &) const;
+			virtual SQLSMALLINT ctype() const override { return SignedIntegerParam::ctype(); }
+			virtual SQLULEN size() const override { return SignedIntegerParam::size(); }
+			virtual void * rwDataAddress() override { return &data; }
+			virtual operator int () const override { return data; }
+			virtual operator long () const override { return data; }
+			virtual operator long long () const override { return data; }
+			virtual const Param * meAsAParam() const override { return this; }
+			virtual void apply(DB::HandleField &) const override;
 	};
 #ifdef COMPLETENESS
 	class UnsignedIntegerColumn : public Column, public UnsignedIntegerParam {
 		public:
 			UnsignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				Column(sc, n, i) { }
-			virtual const Param * meAsAParam() const { return this; }
+			virtual const Param * meAsAParam() const override { return this; }
 	};
 #endif
 	class FloatingPointColumn : public Column, public FloatingPointParam {
@@ -92,37 +92,37 @@ namespace ODBC {
 			FloatingPointColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				DB::Column(n, i),
 				Column(sc, n, i) { }
-			virtual SQLSMALLINT ctype() const { return FloatingPointParam::ctype(); }
-			virtual SQLULEN size() const { return FloatingPointParam::size(); }
-			virtual void * rwDataAddress() { return &data; }
-			virtual operator double () const { return data; }
-			virtual operator float () const { return data; }
-			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(DB::HandleField &) const;
+			virtual SQLSMALLINT ctype() const override { return FloatingPointParam::ctype(); }
+			virtual SQLULEN size() const override { return FloatingPointParam::size(); }
+			virtual void * rwDataAddress() override { return &data; }
+			virtual operator double () const override { return data; }
+			virtual operator float () const override { return data; }
+			virtual const Param * meAsAParam() const override { return this; }
+			virtual void apply(DB::HandleField &) const override;
 	};
 	class IntervalColumn : public Column, public IntervalParam {
 		public:
 			IntervalColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				DB::Column(n, i),
 				Column(sc, n, i) { }
-			virtual SQLSMALLINT ctype() const { return IntervalParam::ctype(); }
-			virtual SQLULEN size() const { return IntervalParam::size(); }
-			virtual void * rwDataAddress() { return &data; }
+			virtual SQLSMALLINT ctype() const override { return IntervalParam::ctype(); }
+			virtual SQLULEN size() const override { return IntervalParam::size(); }
+			virtual void * rwDataAddress() override { return &data; }
 			virtual operator boost::posix_time::time_duration () const;
-			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(DB::HandleField &) const;
+			virtual const Param * meAsAParam() const override { return this; }
+			virtual void apply(DB::HandleField &) const override;
 	};
 	class TimeStampColumn : public Column, public TimeStampParam {
 		public:
 			TimeStampColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) :
 				DB::Column(n, i),
 				Column(sc, n, i) { }
-			virtual SQLSMALLINT ctype() const { return TimeStampParam::ctype(); }
-			virtual SQLULEN size() const { return TimeStampParam::size(); }
-			virtual void * rwDataAddress() { return &data; }
+			virtual SQLSMALLINT ctype() const override { return TimeStampParam::ctype(); }
+			virtual SQLULEN size() const override { return TimeStampParam::size(); }
+			virtual void * rwDataAddress() override { return &data; }
 			virtual operator boost::posix_time::ptime () const;
-			virtual const Param * meAsAParam() const { return this; }
-			virtual void apply(DB::HandleField &) const;
+			virtual const Param * meAsAParam() const override { return this; }
+			virtual void apply(DB::HandleField &) const override;
 	};
 }
 

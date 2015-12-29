@@ -10,8 +10,8 @@ namespace ODBC {
 		public:
 			SelectCommand (const Connection &, const std::string & sql);
 			~SelectCommand();
-			bool				fetch();
-			void				execute();
+			bool				fetch() override;
+			void				execute() override;
 
 		private:
 			bool				fetch(SQLSMALLINT orientation = SQL_FETCH_NEXT, SQLLEN offset = 0);

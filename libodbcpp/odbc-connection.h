@@ -21,18 +21,18 @@ namespace ODBC {
 			SQLHENV 		env;
 			SQLHDBC 		conn;
 
-			void			finish() const;
-			int				beginTx() const;
-			int				commitTx() const;
-			int				rollbackTx() const;
+			void			finish() const override;
+			int				beginTx() const override;
+			int				commitTx() const override;
+			int				rollbackTx() const override;
 			void			abortTx() const;
 			bool			txIsAborted() const;
-			bool			inTx() const;
-			void			ping() const;
+			bool			inTx() const override;
+			void			ping() const override;
 			std::string		getAttrStr(SQLINTEGER) const;
 			SQLINTEGER		getAttrInt(SQLINTEGER) const;
-			DB::BulkDeleteStyle bulkDeleteStyle() const;
-			DB::BulkUpdateStyle bulkUpdateStyle() const;
+			DB::BulkDeleteStyle bulkDeleteStyle() const override;
+			DB::BulkUpdateStyle bulkUpdateStyle() const override;
 
 			DB::SelectCommand * newSelectCommand(const std::string & sql) override;
 			DB::ModifyCommand * newModifyCommand(const std::string & sql) override;
