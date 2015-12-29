@@ -13,9 +13,7 @@ ODBC::Connection::Connection(const DSN& d) :
 	env(0),
 	conn(0),
 	thinkDelStyle(DB::BulkDeleteUsingUsing),
-	thinkUpdStyle(DB::BulkUpdateUsingFromSrc),
-	txDepth(0),
-	txAborted(false)
+	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
 	RETCODE dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
@@ -73,9 +71,7 @@ ODBC::Connection::Connection(const std::string & s) :
 	env(0),
 	conn(0),
 	thinkDelStyle(DB::BulkDeleteUsingUsing),
-	thinkUpdStyle(DB::BulkUpdateUsingFromSrc),
-	txDepth(0),
-	txAborted(false)
+	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
 	RETCODE dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
@@ -97,88 +93,38 @@ ODBC::Connection::~Connection()
 }
 
 void
-ODBC::Connection::finish() const
+ODBC::Connection::beginTxInt()
 {
-	if (txDepth != 0) {
-		rollbackTx();
-		throw DB::TransactionStillOpen();
+	SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn);
 	}
-}
-
-int
-ODBC::Connection::beginTx() const
-{
-	if (txDepth == 0) {
-		SQLRETURN dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-		if (!SQL_SUCCEEDED(dberr)) {
-			throw Error(dberr, SQL_HANDLE_DBC, conn);
-		}
-	}
-	txDepth += 1;
-	return txDepth;
-}
-
-int
-ODBC::Connection::commitTx() const
-{
-	if (txDepth > 0) {
-		if (txAborted) {
-			return rollbackTx();
-		}
-		txDepth -= 1;
-		if (txDepth == 0) {
-			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_COMMIT);
-			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn);
-			}
-			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn);
-			}
-			txAborted = false;
-		}
-		return txDepth;
-	}
-	throw DB::TransactionRequired();
-}
-
-int
-ODBC::Connection::rollbackTx() const
-{
-	if (txDepth > 0) {
-		txDepth -= 1;
-		if (txDepth == 0) {
-			SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_ROLLBACK);
-			if (!SQL_SUCCEEDED(dberr)) {
-				throw Error(dberr, SQL_HANDLE_DBC, conn);
-			}
-			dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
-			if (!SQL_SUCCEEDED(dberr)) {
-			throw Error(dberr, SQL_HANDLE_DBC, conn);
-			}
-			txAborted = false;
-		}
-		return txDepth;
-	}
-	throw DB::TransactionRequired();
 }
 
 void
-ODBC::Connection::abortTx() const
+ODBC::Connection::commitTxInt()
 {
-	txAborted = true;
+	SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_COMMIT);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn);
+	}
+	dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn);
+	}
 }
 
-bool
-ODBC::Connection::txIsAborted() const
+void
+ODBC::Connection::rollbackTxInt()
 {
-	return txAborted;
-}
-
-bool
-ODBC::Connection::inTx() const
-{
-	return (txDepth > 0);
+	SQLRETURN dberr = SQLEndTran(SQL_HANDLE_DBC, conn, SQL_ROLLBACK);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn);
+	}
+	dberr = SQLSetConnectOption(conn, SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON);
+	if (!SQL_SUCCEEDED(dberr)) {
+		throw Error(dberr, SQL_HANDLE_DBC, conn);
+	}
 }
 
 DB::BulkDeleteStyle

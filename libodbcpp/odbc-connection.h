@@ -21,14 +21,10 @@ namespace ODBC {
 			SQLHENV 		env;
 			SQLHDBC 		conn;
 
-			void			finish() const override;
-			int				beginTx() const override;
-			int				commitTx() const override;
-			int				rollbackTx() const override;
-			void			abortTx() const;
-			bool			txIsAborted() const;
-			bool			inTx() const override;
-			void			ping() const override;
+			void beginTxInt() override;
+			void commitTxInt() override;
+			void rollbackTxInt() override;
+			void ping() const override;
 			std::string		getAttrStr(SQLINTEGER) const;
 			SQLINTEGER		getAttrInt(SQLINTEGER) const;
 			DB::BulkDeleteStyle bulkDeleteStyle() const override;
@@ -43,8 +39,6 @@ namespace ODBC {
 
 			void			connectPre();
 			void			connectPost();
-			mutable unsigned int	txDepth;
-			mutable bool			txAborted;
 	};
 }
 
