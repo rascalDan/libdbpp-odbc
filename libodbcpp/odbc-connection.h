@@ -34,8 +34,8 @@ namespace ODBC {
 			DB::BulkDeleteStyle bulkDeleteStyle() const;
 			DB::BulkUpdateStyle bulkUpdateStyle() const;
 
-			DB::SelectCommand * newSelectCommand(const std::string & sql) const;
-			DB::ModifyCommand * newModifyCommand(const std::string & sql) const;
+			DB::SelectCommand * newSelectCommand(const std::string & sql) override;
+			DB::ModifyCommand * newModifyCommand(const std::string & sql) override;
 
 		private:
 			DB::BulkDeleteStyle thinkDelStyle;
