@@ -11,7 +11,7 @@ ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 	switch (rc) {
 		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
-			msg = stringbf(msg, "%d: %d: %5.5s: \"%s\"", err, (int)sqlerr, sqlstatus, sqlerrmsg);
+			msg = stringbf("%d: %d: %5.5s: \"%s\"", err, (int)sqlerr, sqlstatus, sqlerrmsg);
 			break;
 
 		case SQL_INVALID_HANDLE:
