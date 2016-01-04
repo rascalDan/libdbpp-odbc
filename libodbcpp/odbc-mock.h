@@ -9,8 +9,10 @@ namespace ODBC {
 
 class DLL_PUBLIC Mock : public DB::MockServerDatabase {
 	public:
-		Mock(const std::string & master, const std::string & name, const std::vector<boost::filesystem::path> & ss);
+		Mock(const std::string & base, const std::string & master, const std::string & name, const std::vector<boost::filesystem::path> & ss);
 		~Mock();
+
+		const std::string base;
 
 	protected:
 		void DropDatabase() const override;

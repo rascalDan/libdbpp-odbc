@@ -13,9 +13,15 @@
 
 class StandardMockDatabase : public ODBC::Mock {
 	public:
-		StandardMockDatabase() : ODBC::Mock("Driver=postgresql;Database=postgres;uid=postgres;servername=/run/postgresql", "odbcmock", {
+		StandardMockDatabase() : ODBC::Mock("Driver=psqlodbcw.so;uid=postgres;servername=/run/postgresql", "Database=postgres", "odbcmock", {
 				rootDir / "odbcschema.sql" })
 		{
+		}
+
+		void DropDatabase() const override
+		{
+			master->execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + testDbName + "'");
+			ODBC::Mock::DropDatabase();
 		}
 };
 

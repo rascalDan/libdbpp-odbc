@@ -4,8 +4,9 @@
 
 namespace ODBC {
 
-Mock::Mock(const std::string & masterdb, const std::string & name, const std::vector<boost::filesystem::path> & ss) :
-	MockServerDatabase(masterdb, name, "odbc")
+Mock::Mock(const std::string & b, const std::string & masterdb, const std::string & name, const std::vector<boost::filesystem::path> & ss) :
+	MockServerDatabase(b + ";" + masterdb, name, "odbc"),
+	base(b)
 {
 	CreateNewDatabase();
 	PlaySchemaScripts(ss);
@@ -14,7 +15,7 @@ Mock::Mock(const std::string & masterdb, const std::string & name, const std::ve
 DB::Connection *
 Mock::openConnection() const
 {
-	return new Connection(stringbf("Driver=postgresql;Database=%s;uid=postgres;servername=/run/postgresql", testDbName));
+	return new Connection(stringbf("%s;Database=%s", base, testDbName));
 }
 
 Mock::~Mock()
@@ -24,7 +25,6 @@ Mock::~Mock()
 
 void Mock::DropDatabase() const
 {
-	master->execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + testDbName + "'");
 	MockServerDatabase::DropDatabase();
 }
 
