@@ -1,6 +1,21 @@
 #include "odbc-error.h"
-#include <buffer.h>
+#include <compileTimeFormatter.h>
 
+namespace AdHoc {
+	StreamWriterT('5') {
+		template<typename ... Pn>
+		static void write(stream & s, const SQLCHAR sqlstatus[6], const Pn & ... pn)
+		{
+			s.write(reinterpret_cast<const char *>(sqlstatus), 5);
+			StreamWriter::next(s, pn...);
+		}
+	};
+}
+
+AdHocFormatter(ODBCErrorWithInfo, "%?: %?: %5: \"%?\"");
+AdHocFormatter(ODBCErrorInvalidHandle, "(%?) Invalid handle passed into function");
+AdHocFormatter(ODBCErrorNoData, "(%?) No error data available for record");
+AdHocFormatter(ODBCError, "Failed to get diagnostics for return code %?");
 ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 {
 	SQLCHAR     sqlstatus[6];
@@ -11,20 +26,20 @@ ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 	switch (rc) {
 		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
-			msg = stringbf("%d: %d: %5.5s: \"%s\"", err, (int)sqlerr, sqlstatus, sqlerrmsg);
+			msg = ODBCErrorWithInfo::get(err, sqlerr, sqlstatus, sqlerrmsg);
 			break;
 
 		case SQL_INVALID_HANDLE:
-			msg = stringbf("(%d) Invalid handle passed into function", err);
+			msg = ODBCErrorInvalidHandle::get(err);
 			break;
 
 		case SQL_NO_DATA:
-			msg = stringbf("(%d) No error data available for record", err);
+			msg = ODBCErrorNoData::get(err);
 			break;
 
 		case SQL_ERROR:
 		default:
-			msg = stringbf("Failed to get diagnostics for return code %d", err);
+			msg = ODBCError::get(err);
 			break;
 	}
 }

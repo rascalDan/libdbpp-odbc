@@ -1,6 +1,6 @@
 #include "odbc-connection.h"
 #include "odbc-mock.h"
-#include <buffer.h>
+#include <compileTimeFormatter.h>
 
 namespace ODBC {
 
@@ -12,10 +12,11 @@ Mock::Mock(const std::string & b, const std::string & masterdb, const std::strin
 	PlaySchemaScripts(ss);
 }
 
+AdHocFormatter(MockConnStr, "%?;Database=%?");
 DB::Connection *
 Mock::openConnection() const
 {
-	return new Connection(stringbf("%s;Database=%s", base, testDbName));
+	return new Connection(MockConnStr::get(base, testDbName));
 }
 
 Mock::~Mock()
