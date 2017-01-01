@@ -140,13 +140,13 @@ ODBC::Connection::bulkUpdateStyle() const
 }
 
 DB::SelectCommand *
-ODBC::Connection::newSelectCommand(const std::string & sql)
+ODBC::Connection::newSelectCommand(const std::string & sql, const DB::CommandOptions *)
 {
 	return new ODBC::SelectCommand(*this, sql);
 }
 
 DB::ModifyCommand *
-ODBC::Connection::newModifyCommand(const std::string & sql)
+ODBC::Connection::newModifyCommand(const std::string & sql, const DB::CommandOptions *)
 {
 	return new ODBC::ModifyCommand(*this, sql);
 }
