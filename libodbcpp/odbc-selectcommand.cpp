@@ -52,6 +52,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
 			}
+			// fall-through
 		case SQL_SUCCESS:
 			{
 				bool resized = false;
