@@ -17,10 +17,7 @@ ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) 
 ODBC::SelectCommand::~SelectCommand()
 {
 	if (!columns->empty()) {
-		RETCODE rc = SQLCloseCursor(hStmt);
-		if (!SQL_SUCCEEDED(rc)) {
-			throw Error(rc, SQL_HANDLE_STMT, hStmt);
-		}
+		SQLCloseCursor(hStmt);
 	}
 }
 
