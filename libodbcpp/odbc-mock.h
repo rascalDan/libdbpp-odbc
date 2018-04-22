@@ -18,7 +18,7 @@ class DLL_PUBLIC Mock : public DB::MockServerDatabase {
 		void DropDatabase() const override;
 
 	private:
-		DB::Connection * openConnection() const override;
+		DB::ConnectionPtr openConnection() const override;
 };
 
 }

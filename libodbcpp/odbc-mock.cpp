@@ -13,10 +13,10 @@ Mock::Mock(const std::string & b, const std::string & masterdb, const std::strin
 }
 
 AdHocFormatter(MockConnStr, "%?;Database=%?");
-DB::Connection *
+DB::ConnectionPtr
 Mock::openConnection() const
 {
-	return new Connection(MockConnStr::get(base, testDbName));
+	return std::make_shared<Connection>(MockConnStr::get(base, testDbName));
 }
 
 Mock::~Mock()

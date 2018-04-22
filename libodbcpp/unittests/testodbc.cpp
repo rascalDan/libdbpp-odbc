@@ -11,17 +11,11 @@
 #include <definedDirs.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-class StandardMockDatabase : public ODBC::Mock {
+class StandardMockDatabase : public DB::PluginMock<ODBC::Mock> {
 	public:
-		StandardMockDatabase() : ODBC::Mock("Driver=psqlodbcw.so;uid=postgres;servername=/run/postgresql", "Database=postgres", "odbcmock", {
-				rootDir / "odbcschema.sql" })
+		StandardMockDatabase() : DB::PluginMock<ODBC::Mock>( "odbcmock", { rootDir / "odbcschema.sql" },
+				"Driver=psqlodbcw.so;uid=postgres;servername=/run/postgresql", "Database=postgres")
 		{
-		}
-
-		void DropDatabase() const override
-		{
-			master->execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + testDbName + "'");
-			ODBC::Mock::DropDatabase();
 		}
 };
 
@@ -43,30 +37,26 @@ BOOST_AUTO_TEST_CASE( transactions )
 	BOOST_REQUIRE_EQUAL(true, ro->inTx());
 	ro->commitTx();
 	BOOST_REQUIRE_EQUAL(false, ro->inTx());
-
-	delete ro;
 }
 
 BOOST_AUTO_TEST_CASE( bindAndSend )
 {
 	auto rw = DB::MockDatabase::openConnectionTo("odbcmock");
 
-	auto mod = rw->newModifyCommand("INSERT INTO test VALUES(?, ?, ?, ?, ?)");
+	auto mod = rw->modify("INSERT INTO test VALUES(?, ?, ?, ?, ?)");
 	mod->bindParamI(0, testInt);
 	mod->bindParamF(1, testDouble);
 	mod->bindParamS(2, testString);
 	mod->bindParamB(3, testBool);
 	mod->bindParamT(4, testDateTime);
 	mod->execute();
-	delete mod;
-	delete rw;
 }
 
 BOOST_AUTO_TEST_CASE( bindAndSelect )
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
-	auto select = ro->newSelectCommand("SELECT * FROM test WHERE id = ?");
+	auto select = ro->select("SELECT * FROM test WHERE id = ?");
 	select->bindParamI(0, testInt);
 	select->execute();
 	int rows = 0;
@@ -78,16 +68,14 @@ BOOST_AUTO_TEST_CASE( bindAndSelect )
 		assertColumnValueHelper(*select, 4, testDateTime);
 		rows += 1;
 	}
-	delete select;
 	BOOST_REQUIRE_EQUAL(1, rows);
-	delete ro;
 }
 
 BOOST_AUTO_TEST_CASE( bindAndSelectOther )
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
-	auto select = ro->newSelectCommand("SELECT * FROM test WHERE id != ?");
+	auto select = ro->select("SELECT * FROM test WHERE id != ?");
 	select->bindParamI(0, testInt);
 	select->execute();
 	int rows = 0;
@@ -99,9 +87,7 @@ BOOST_AUTO_TEST_CASE( bindAndSelectOther )
 		assertColumnValueHelper(*select, 4, boost::posix_time::ptime_from_tm({ 3, 6, 23, 27, 3, 115, 0, 0, 0, 0, 0}));
 		rows += 1;
 	}
-	delete select;
 	BOOST_REQUIRE_EQUAL(1, rows);
-	delete ro;
 }
 
 BOOST_AUTO_TEST_SUITE_END();

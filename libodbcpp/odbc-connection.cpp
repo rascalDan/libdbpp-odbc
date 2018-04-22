@@ -139,16 +139,16 @@ ODBC::Connection::bulkUpdateStyle() const
 	return thinkUpdStyle;
 }
 
-DB::SelectCommand *
-ODBC::Connection::newSelectCommand(const std::string & sql, const DB::CommandOptions *)
+DB::SelectCommandPtr
+ODBC::Connection::select(const std::string & sql, const DB::CommandOptionsCPtr &)
 {
-	return new ODBC::SelectCommand(*this, sql);
+	return std::make_shared<ODBC::SelectCommand>(*this, sql);
 }
 
-DB::ModifyCommand *
-ODBC::Connection::newModifyCommand(const std::string & sql, const DB::CommandOptions *)
+DB::ModifyCommandPtr
+ODBC::Connection::modify(const std::string & sql, const DB::CommandOptionsCPtr &)
 {
-	return new ODBC::ModifyCommand(*this, sql);
+	return std::make_shared<ODBC::ModifyCommand>(*this, sql);
 }
 
 std::string

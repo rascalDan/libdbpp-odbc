@@ -13,6 +13,7 @@ run
 	<define>ROOT=\"$(me)\"
 	<define>BOOST_TEST_DYN_LINK
 	<library>..//dbpp-odbc
+	<library>..//adhocutil
 	<library>dbpptestcore
 	<library>boost_utf
 	<library>boost_filesystem
