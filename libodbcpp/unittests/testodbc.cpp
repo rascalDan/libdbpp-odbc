@@ -4,6 +4,7 @@
 #include <definedDirs.h>
 #include <modifycommand.h>
 #include <selectcommand.h>
+#include <selectcommandUtil.impl.h>
 #include <column.h>
 #include <error.h>
 #include <odbc-mock.h>
@@ -88,6 +89,20 @@ BOOST_AUTO_TEST_CASE( bindAndSelectOther )
 		rows += 1;
 	}
 	BOOST_REQUIRE_EQUAL(1, rows);
+}
+
+BOOST_AUTO_TEST_CASE( multibyte )
+{
+	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
+
+	auto select = ro->select("SELECT LPAD('', n, '£'), n FROM GENERATE_SERIES(1, 50000, 200) n");
+	select->execute();
+	int rows = 0;
+	for (const auto [s, n] : select->as<std::string, int64_t>()) {
+		BOOST_CHECK_EQUAL(s.length(), n * 2);
+		rows += 1;
+	}
+	BOOST_REQUIRE_EQUAL(250, rows);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

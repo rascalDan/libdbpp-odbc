@@ -16,7 +16,7 @@ ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) 
 
 ODBC::SelectCommand::~SelectCommand()
 {
-	if (!columns->empty()) {
+	if (columnCount()) {
 		SQLCloseCursor(hStmt);
 	}
 }
@@ -30,7 +30,7 @@ ODBC::SelectCommand::fetch()
 bool
 ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
-	if (columns->empty()) {
+	if (!columnCount()) {
 		execute();
 	}
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
@@ -42,22 +42,20 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
-						for (Columns::iterator i = columns->begin(); i != columns->end(); ++i) {
-							std::dynamic_pointer_cast<Column>(*i)->resize();
+						for (const auto & c : largeColumns) {
+							c->resize();
 						}
 						return fetch(SQL_FETCH_RELATIVE, 0);
 					}
-				}
-				if (rc != SQL_SUCCESS_WITH_INFO) {
-					throw Error(rc, SQL_HANDLE_STMT, hStmt);
+					fprintf(stderr, "truncation\n");
 				}
 			}
 			// fall-through
 		case SQL_SUCCESS:
 			{
 				bool resized = false;
-				for (Columns::iterator i = columns->begin(); i != columns->end(); ++i) {
-					resized |= std::dynamic_pointer_cast<Column>(*i)->resize();
+				for (const auto & c : largeColumns) {
+					resized |= c->resize();
 				}
 				if (resized) {
 					return fetch(SQL_FETCH_RELATIVE, 0);
@@ -130,7 +128,14 @@ ODBC::SelectCommand::execute()
 			case SQL_UNKNOWN_TYPE:
 				throw DB::ColumnTypeNotSupported();
 			default:
-				ncol = insertColumn(std::make_shared<CharArrayColumn>(this, colName, col, bindSize));
+				SQLLEN octetSize = 0;
+				if (!SQL_SUCCEEDED(rc = SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, NULL, 0, NULL, &octetSize))) {
+					throw Error(rc, SQL_HANDLE_STMT, hStmt);
+				}
+				bindSize = octetSize;
+				auto lc = std::make_shared<CharArrayColumn>(this, colName, col, bindSize);
+				ncol = insertColumn(lc);
+				largeColumns.insert(lc);
 				break;
 		};
 		std::dynamic_pointer_cast<Column>(ncol)->bind();

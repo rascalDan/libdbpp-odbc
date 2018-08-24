@@ -15,6 +15,9 @@ namespace ODBC {
 
 		private:
 			bool				fetch(SQLSMALLINT orientation = SQL_FETCH_NEXT, SQLLEN offset = 0);
+			typedef std::shared_ptr<Column> ColumnPtr;
+			typedef std::set<ColumnPtr> Columns;
+			Columns largeColumns;
 	};
 }
 
