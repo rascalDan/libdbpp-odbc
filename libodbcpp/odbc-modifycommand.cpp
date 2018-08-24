@@ -21,7 +21,7 @@ ODBC::ModifyCommand::execute(bool anc)
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
 	}
-	SQLLEN rows;
+	SQLLEN rows = 0;
 	rc = SQLRowCount(hStmt, &rows);
 	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
