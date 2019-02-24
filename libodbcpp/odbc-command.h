@@ -27,6 +27,7 @@ namespace ODBC {
 			void				bindParamF(unsigned int i, float val) override;
 
 			void				bindParamS(unsigned int i, const Glib::ustring &) override;
+			void				bindParamS(unsigned int i, const std::string_view &) override;
 
 			void				bindParamT(unsigned int i, const boost::posix_time::time_duration &) override;
 			void				bindParamT(unsigned int i, const boost::posix_time::ptime &) override;

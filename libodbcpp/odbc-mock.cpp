@@ -4,7 +4,7 @@
 
 namespace ODBC {
 
-Mock::Mock(const std::string & b, const std::string & masterdb, const std::string & name, const std::vector<boost::filesystem::path> & ss) :
+Mock::Mock(const std::string & b, const std::string & masterdb, const std::string & name, const std::vector<std::filesystem::path> & ss) :
 	MockServerDatabase(b + ";" + masterdb, name, "odbc"),
 	base(b)
 {

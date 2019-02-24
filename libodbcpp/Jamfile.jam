@@ -13,7 +13,6 @@ lib dbpp-odbc :
 	<library>adhocutil
 	<library>dbppcore
 	<library>boost_date_time
-	<library>boost_system
 	: :
 	<include>.
 	<library>..//glibmm

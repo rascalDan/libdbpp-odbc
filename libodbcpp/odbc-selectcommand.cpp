@@ -50,7 +50,7 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 					fprintf(stderr, "truncation\n");
 				}
 			}
-			// fall-through
+			[[ fallthrough ]];
 		case SQL_SUCCESS:
 			{
 				bool resized = false;
@@ -88,20 +88,20 @@ ODBC::SelectCommand::execute()
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
 		Glib::ustring colName((const char *)_colName, nameLen);
-		DB::ColumnPtr ncol;
+		DB::Column * ncol;
 		switch (bindType) {
 			case SQL_DECIMAL:
 			case SQL_NUMERIC:
 			case SQL_REAL:
 			case SQL_FLOAT:
 			case SQL_DOUBLE:
-				ncol = insertColumn(std::make_shared<FloatingPointColumn>(this, colName, col));
+				ncol = insertColumn(std::make_unique<FloatingPointColumn>(this, colName, col)).get();
 				break;
 			case SQL_SMALLINT:
 			case SQL_INTEGER:
 			case SQL_TINYINT:
 			case SQL_BIGINT:
-				ncol = insertColumn(std::make_shared<SignedIntegerColumn>(this, colName, col));
+				ncol = insertColumn(std::make_unique<SignedIntegerColumn>(this, colName, col)).get();
 				break;
 			case SQL_TYPE_TIME:
 			case SQL_INTERVAL_YEAR:
@@ -117,13 +117,13 @@ ODBC::SelectCommand::execute()
 			case SQL_INTERVAL_HOUR_TO_MINUTE:
 			case SQL_INTERVAL_HOUR_TO_SECOND:
 			case SQL_INTERVAL_MINUTE_TO_SECOND:
-				ncol = insertColumn(std::make_shared<IntervalColumn>(this, colName, col));
+				ncol = insertColumn(std::make_unique<IntervalColumn>(this, colName, col)).get();
 				break;
 			case SQL_TIMESTAMP:
 			case SQL_DATETIME:
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIMESTAMP:
-				ncol = insertColumn(std::make_shared<TimeStampColumn>(this, colName, col));
+				ncol = insertColumn(std::make_unique<TimeStampColumn>(this, colName, col)).get();
 				break;
 			case SQL_UNKNOWN_TYPE:
 				throw DB::ColumnTypeNotSupported();
@@ -133,12 +133,12 @@ ODBC::SelectCommand::execute()
 					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
 				bindSize = octetSize;
-				auto lc = std::make_shared<CharArrayColumn>(this, colName, col, bindSize);
-				ncol = insertColumn(lc);
-				largeColumns.insert(lc);
+				auto lc = std::make_unique<CharArrayColumn>(this, colName, col, bindSize);
+				largeColumns.insert(lc.get());
+				ncol = insertColumn(std::move(lc)).get();
 				break;
 		};
-		std::dynamic_pointer_cast<Column>(ncol)->bind();
+		dynamic_cast<Column *>(ncol)->bind();
 	}
 }
 

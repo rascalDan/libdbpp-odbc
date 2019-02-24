@@ -74,7 +74,8 @@ SIMPLEBINDER(bool, BooleanParam, B);
 SIMPLEBINDER(double, FloatingPointParam, F);
 SIMPLEBINDER(float, FloatingPointParam, F);
 
-SIMPLEBINDER(const Glib::ustring &, GlibUstringParam, S);
+SIMPLEBINDER(const Glib::ustring &, StdStringParam, S);
+SIMPLEBINDER(const std::string_view &, StdStringParam, S);
 
 SIMPLEBINDER(const boost::posix_time::ptime &, TimeStampParam, T);
 SIMPLEBINDER(const boost::posix_time::time_duration &, IntervalParam, T);
@@ -86,11 +87,24 @@ ODBC::Command::bindNull(unsigned int i)
 }
 
 void
-ODBC::GlibUstringParam::operator=(Glib::ustring const & d)
+ODBC::StdStringParam::operator=(Glib::ustring const & d)
 {
 	const char * addr = data.data();
 	data = d;
 	bindLen = d.bytes();
+	paramBound &= (addr == data.data());
+	if (!paramBound) {
+		paramBound = false;
+		bind();
+	}
+}
+
+void
+ODBC::StdStringParam::operator=(std::string_view const & d)
+{
+	const char * addr = data.data();
+	data = d;
+	bindLen = d.length();
 	paramBound &= (addr == data.data());
 	if (!paramBound) {
 		paramBound = false;

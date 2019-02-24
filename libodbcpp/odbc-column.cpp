@@ -82,7 +82,7 @@ void
 ODBC::CharArrayColumn::apply(DB::HandleField & h) const
 {
 	if (isNull()) return h.null();
-	h.string(&data.front(), bindLen);
+	h.string({ data.data(), (std::size_t)bindLen });
 }
 void
 ODBC::TimeStampColumn::apply(DB::HandleField & h) const

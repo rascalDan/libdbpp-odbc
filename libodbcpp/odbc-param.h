@@ -80,18 +80,19 @@ namespace ODBC {
 		protected:
 			SQLDOUBLE data;
 	};
-	class GlibUstringParam : public Param {
+	class StdStringParam : public Param {
 		public:
-			GlibUstringParam() : Param() { }
-			GlibUstringParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
+			StdStringParam() : Param() { }
+			StdStringParam(Command * c, unsigned int i) : Param(c, i) { bindLen = size(); }
 			virtual SQLSMALLINT ctype() const override { return SQL_C_CHAR; }
 			virtual SQLSMALLINT stype() const override { return SQL_CHAR; }
-			virtual SQLULEN size() const override { return data.bytes(); }
+			virtual SQLULEN size() const override { return data.length(); }
 			virtual SQLINTEGER dp() const override { return 0; }
 			virtual const void * dataAddress() const override { return data.data(); }
+			void operator=(const std::string_view & d);
 			void operator=(const Glib::ustring & d);
 		protected:
-			Glib::ustring data;
+			std::string data;
 	};
 	class IntervalParam : public Param {
 		public:
