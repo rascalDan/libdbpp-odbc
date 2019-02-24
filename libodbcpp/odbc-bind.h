@@ -7,8 +7,7 @@
 namespace ODBC {
 	class Bind {
 		public:
-			Bind();
-			virtual	~Bind() = 0;
+			virtual	~Bind() = default;
 
 			virtual SQLSMALLINT ctype() const = 0; // The C type ID
 			virtual SQLULEN size() const = 0; // The size of the data

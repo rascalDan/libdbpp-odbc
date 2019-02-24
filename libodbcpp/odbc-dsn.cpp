@@ -1,13 +1,9 @@
 #include "odbc-dsn.h"
 
-ODBC::DSN::DSN(const std::string & d, const std::string & u, const std::string & p) :
-	dsn(d),
-	username(u),
-	password(p)
-{
-}
-
-ODBC::DSN::~DSN()
+ODBC::DSN::DSN(std::string d, std::string u, std::string p) :
+	dsn(std::move(d)),
+	username(std::move(u)),
+	password(std::move(p))
 {
 }
 

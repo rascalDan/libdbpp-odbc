@@ -11,7 +11,7 @@ namespace ODBC {
 		public:
 			Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle);
 
-			std::string message() const throw() override;
+			std::string message() const noexcept override;
 
 		private:
 			std::string msg;

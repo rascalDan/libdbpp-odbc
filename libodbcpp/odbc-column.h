@@ -13,7 +13,7 @@ namespace ODBC {
 	class Column : public virtual Bind, public virtual DB::Column {
 		public:
 			Column(SelectCommand *, const Glib::ustring & s, unsigned int i);
-			virtual ~Column() = 0;
+			virtual ~Column() = default;
 			void bind();
 			virtual void * rwDataAddress() = 0;
 			virtual bool resize();

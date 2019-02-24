@@ -2,8 +2,7 @@
 #include "odbc-error.h"
 #include "odbc-column.h"
 #include <sqlext.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 
@@ -39,7 +38,8 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 		default:
 			{
 				SQLCHAR sqlstatus[6];
-				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, NULL, NULL, 0, NULL);
+				// NOLINTNEXTLINE(hicpp-no-array-decay)
+				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, nullptr, nullptr, 0, nullptr);
 				if (SQL_SUCCEEDED(diagrc)) {
 					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
 						for (const auto & c : largeColumns) {
@@ -47,7 +47,6 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 						}
 						return fetch(SQL_FETCH_RELATIVE, 0);
 					}
-					fprintf(stderr, "truncation\n");
 				}
 			}
 			[[ fallthrough ]];
@@ -83,6 +82,7 @@ ODBC::SelectCommand::execute()
 		SQLSMALLINT nameLen, dp, nullable, bindType;
 		SQLULEN bindSize;
 		int sqlcol = col + 1;
+		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
 						&bindSize, &dp, &nullable))) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
@@ -129,7 +129,7 @@ ODBC::SelectCommand::execute()
 				throw DB::ColumnTypeNotSupported();
 			default:
 				SQLLEN octetSize = 0;
-				if (!SQL_SUCCEEDED(rc = SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, NULL, 0, NULL, &octetSize))) {
+				if (!SQL_SUCCEEDED(rc = SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, nullptr, 0, nullptr, &octetSize))) {
 					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
 				bindSize = octetSize;

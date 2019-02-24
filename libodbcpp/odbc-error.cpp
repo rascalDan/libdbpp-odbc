@@ -22,7 +22,8 @@ ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 	SQLINTEGER  sqlerr;
 	SQLCHAR     sqlerrmsg[12800];
 
-	SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus, &sqlerr, sqlerrmsg, sizeof(sqlerrmsg), NULL);
+	// NOLINTNEXTLINE(hicpp-no-array-decay)
+	SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus, &sqlerr, sqlerrmsg, sizeof(sqlerrmsg), nullptr);
 	switch (rc) {
 		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
@@ -45,7 +46,7 @@ ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 }
 
 std::string
-ODBC::Error::message() const throw()
+ODBC::Error::message() const noexcept
 {
 	return msg;
 }

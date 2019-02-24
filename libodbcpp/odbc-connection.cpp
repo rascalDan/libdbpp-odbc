@@ -1,7 +1,7 @@
 #include <sqlext.h>
 #include <stdexcept>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include "odbc-connection.h"
 #include "odbc-selectcommand.h"
 #include "odbc-modifycommand.h"
@@ -10,8 +10,8 @@
 NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory);
 
 ODBC::Connection::Connection(const DSN& d) :
-	env(0),
-	conn(0),
+	env(nullptr),
+	conn(nullptr),
 	thinkDelStyle(DB::BulkDeleteUsingUsing),
 	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
@@ -56,25 +56,26 @@ ODBC::Connection::connectPost()
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	char info[1024];
-	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, (SQLCHAR*)info, sizeof(info), NULL);
+	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, (SQLCHAR*)info, sizeof(info), nullptr);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	// Apply known DB specific tweaks
-	if (strstr(info, "myodbc") != NULL) {
+	// NOLINTNEXTLINE(hicpp-no-array-decay)
+	if (strstr(info, "myodbc")) {
 		thinkDelStyle = DB::BulkDeleteUsingUsingAlias;
 		thinkUpdStyle = DB::BulkUpdateUsingJoin;
 	}
 }
 
 ODBC::Connection::Connection(const std::string & s) :
-	env(0),
-	conn(0),
+	env(nullptr),
+	conn(nullptr),
 	thinkDelStyle(DB::BulkDeleteUsingUsing),
 	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
-	RETCODE dberr = SQLDriverConnect(conn, NULL, (SQLCHAR*)s.c_str(), s.length(), NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
+	RETCODE dberr = SQLDriverConnect(conn, nullptr, (SQLCHAR*)s.c_str(), s.length(), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
@@ -84,11 +85,11 @@ ODBC::Connection::Connection(const std::string & s) :
 ODBC::Connection::~Connection()
 {
 	if (conn) {
-		SQL_SUCCEEDED(SQLDisconnect(conn));
-		SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_DBC, conn));
+		SQLDisconnect(conn);
+		SQLFreeHandle(SQL_HANDLE_DBC, conn);
 	}
 	if (env) {
-		SQL_SUCCEEDED(SQLFreeHandle(SQL_HANDLE_ENV, env));
+		SQLFreeHandle(SQL_HANDLE_ENV, env);
 	}
 }
 
@@ -169,7 +170,7 @@ SQLINTEGER
 ODBC::Connection::getAttrInt(SQLINTEGER attr) const
 {
 	SQLINTEGER result;
-	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), 0);
+	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), nullptr);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn);
 	}

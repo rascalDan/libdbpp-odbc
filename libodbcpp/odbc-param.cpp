@@ -2,23 +2,22 @@
 #include "odbc-param.h"
 #include "odbc-command.h"
 #include "odbc-error.h"
-#include <string.h>
+#include <cstring>
 
 ODBC::Param::Param() :
-	paramCmd(NULL),
+	paramCmd(nullptr),
 	paramIdx(0),
-	paramBound(false)
+	paramBound(false),
+	dataLength(0)
 {
 }
 
 ODBC::Param::Param(Command * c, unsigned int i) :
 	paramCmd(c),
 	paramIdx(i),
-	paramBound(false)
+	paramBound(false),
+	dataLength(0)
 {
-}
-
-ODBC::Param::~Param(){
 }
 
 template <class ParamType>
@@ -28,17 +27,14 @@ ODBC::Command::makeParam(unsigned int idx)
 	if (idx >= params.size()) {
 		throw DB::ParameterOutOfRange();
 	}
-	Param * & p = params[idx];
+	auto & p = params[idx];
 	if (p) {
-		ParamType * np = dynamic_cast<ParamType *>(p);
-		if (np) {
+		if (auto np = dynamic_cast<ParamType*>(p.get())) {
 			return np;
 		}
-		delete p;
 	}
-	ParamType * np = new ParamType(this, idx);
-	p = np;
-	return np;
+	p = std::make_unique<ParamType>(this, idx);
+	return static_cast<ParamType *>(p.get());
 }
 
 void
@@ -86,7 +82,7 @@ ODBC::Command::bindNull(unsigned int i)
 	makeParam<NullParam>(i)->bind();
 }
 
-void
+ODBC::StdStringParam &
 ODBC::StdStringParam::operator=(Glib::ustring const & d)
 {
 	const char * addr = data.data();
@@ -97,9 +93,10 @@ ODBC::StdStringParam::operator=(Glib::ustring const & d)
 		paramBound = false;
 		bind();
 	}
+	return *this;
 }
 
-void
+ODBC::StdStringParam &
 ODBC::StdStringParam::operator=(std::string_view const & d)
 {
 	const char * addr = data.data();
@@ -110,9 +107,10 @@ ODBC::StdStringParam::operator=(std::string_view const & d)
 		paramBound = false;
 		bind();
 	}
+	return *this;
 }
 
-void
+ODBC::TimeStampParam &
 ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
 {
 	data.year = d.date().year();
@@ -122,9 +120,10 @@ ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
 	data.minute = d.time_of_day().minutes();
 	data.second = d.time_of_day().seconds();
 	data.fraction = d.time_of_day().fractional_seconds();
+	return *this;
 }
 
-void
+ODBC::IntervalParam &
 ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
 {
 	data.interval_type = SQL_IS_DAY_TO_SECOND;
@@ -134,5 +133,6 @@ ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
 	data.intval.day_second.minute = d.minutes();
 	data.intval.day_second.second = d.seconds();
 	data.intval.day_second.fraction = d.fractional_seconds();
+	return *this;
 }
 

@@ -4,15 +4,15 @@
 #include <command.h>
 #include <vector>
 #include "odbc-connection.h"
+#include "odbc-param_fwd.h"
 #include <glibmm/ustring.h>
 
 namespace ODBC {
-	class Param;
+	using ParamPtr = std::unique_ptr<Param>;
 	class Command : public virtual DB::Command {
-			typedef std::vector<Param*> Params;
+			using Params = std::vector<ParamPtr>;
 		public:
 			Command(const Connection &, const std::string & sql);
-			virtual ~Command() = 0;
 
 			void				bindParamI(unsigned int i, int val) override;
 			void				bindParamI(unsigned int i, long val) override;

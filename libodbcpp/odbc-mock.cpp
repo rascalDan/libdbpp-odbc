@@ -8,7 +8,7 @@ Mock::Mock(const std::string & b, const std::string & masterdb, const std::strin
 	MockServerDatabase(b + ";" + masterdb, name, "odbc"),
 	base(b)
 {
-	CreateNewDatabase();
+	Mock::CreateNewDatabase();
 	PlaySchemaScripts(ss);
 }
 
@@ -21,7 +21,7 @@ Mock::openConnection() const
 
 Mock::~Mock()
 {
-	DropDatabase();
+	Mock::DropDatabase();
 }
 
 void Mock::DropDatabase() const

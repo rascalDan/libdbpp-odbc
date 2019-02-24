@@ -1,6 +1,6 @@
 #include <sqlext.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include "odbc-column.h"
 #include "odbc-command.h"
 #include "odbc-selectcommand.h"
@@ -11,10 +11,6 @@ ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i
 	selectCmd(sc)
 {
 	bindLen = 0;
-}
-
-ODBC::Column::~Column()
-{
 }
 
 bool
@@ -69,30 +65,40 @@ ODBC::IntervalColumn::operator boost::posix_time::time_duration() const
 void
 ODBC::SignedIntegerColumn::apply(DB::HandleField & h) const
 {
-	if (isNull()) return h.null();
+	if (isNull()) {
+		return h.null();
+	}
 	h.integer(data);
 }
 void
 ODBC::FloatingPointColumn::apply(DB::HandleField & h) const
 {
-	if (isNull()) return h.null();
+	if (isNull()) {
+		return h.null();
+	}
 	h.floatingpoint(data);
 }
 void
 ODBC::CharArrayColumn::apply(DB::HandleField & h) const
 {
-	if (isNull()) return h.null();
+	if (isNull()) {
+		return h.null();
+	}
 	h.string({ data.data(), (std::size_t)bindLen });
 }
 void
 ODBC::TimeStampColumn::apply(DB::HandleField & h) const
 {
-	if (isNull()) return h.null();
+	if (isNull()) {
+		return h.null();
+	}
 	h.timestamp(*this);
 }
 void
 ODBC::IntervalColumn::apply(DB::HandleField & h) const
 {
-	if (isNull()) return h.null();
+	if (isNull()) {
+		return h.null();
+	}
 	h.interval(*this);
 }

@@ -8,10 +8,6 @@ ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection & c, const std::string
 {
 }
 
-ODBC::ModifyCommand::~ModifyCommand()
-{
-}
-
 unsigned int
 ODBC::ModifyCommand::execute(bool anc)
 {

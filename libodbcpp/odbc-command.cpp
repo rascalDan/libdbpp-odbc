@@ -5,6 +5,7 @@
 
 ODBC::Command::Command(const Connection & c, const std::string & s) :
 	DB::Command(s),
+	hStmt(nullptr),
 	connection(c)
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);
@@ -27,14 +28,5 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	params.resize(pcount);
-}
-
-ODBC::Command::~Command()
-{
-	for (Params::iterator i = params.begin(); i != params.end(); ++i) {
-		if (*i) {
-			delete *i;
-		}
-	}
 }
 
