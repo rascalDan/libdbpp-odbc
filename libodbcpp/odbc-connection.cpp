@@ -55,14 +55,14 @@ ODBC::Connection::connectPost()
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
-	char info[1024];
-	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, (SQLCHAR*)info, sizeof(info), nullptr);
+	std::array<SQLCHAR, 1024> info {};
+	dberr = SQLGetInfo(conn, SQL_DRIVER_NAME, info.data(), info.size(), nullptr);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
 	// Apply known DB specific tweaks
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
-	if (strstr(info, "myodbc")) {
+	if (strcasestr((const char *)info.data(), "myodbc")) {
 		thinkDelStyle = DB::BulkDeleteUsingUsingAlias;
 		thinkUpdStyle = DB::BulkUpdateUsingJoin;
 	}

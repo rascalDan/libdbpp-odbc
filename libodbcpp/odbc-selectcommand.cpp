@@ -26,6 +26,7 @@ ODBC::SelectCommand::fetch()
 	return fetch(SQL_FETCH_NEXT, 0);
 }
 
+constexpr std::array<SQLCHAR, 6> truncated = { '0', '1', '0', '0', '4', '\0' };
 bool
 ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
@@ -37,11 +38,10 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 		case SQL_SUCCESS_WITH_INFO:
 		default:
 			{
-				SQLCHAR sqlstatus[6];
-				// NOLINTNEXTLINE(hicpp-no-array-decay)
-				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus, nullptr, nullptr, 0, nullptr);
+				std::array<SQLCHAR, 6> sqlstatus {};
+				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus.data(), nullptr, nullptr, 0, nullptr);
 				if (SQL_SUCCEEDED(diagrc)) {
-					if (!strncmp((const char*)sqlstatus, "01004", 5)) {
+					if (sqlstatus == truncated) {
 						for (const auto & c : largeColumns) {
 							c->resize();
 						}
@@ -78,16 +78,16 @@ ODBC::SelectCommand::execute()
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	for (int col = 0; col < colCount; col++) {
-		SQLCHAR _colName[300];
+		std::array<SQLCHAR, 300> _colName {};
 		SQLSMALLINT nameLen, dp, nullable, bindType;
 		SQLULEN bindSize;
 		int sqlcol = col + 1;
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
-		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName, sizeof(_colName), &nameLen, &bindType,
+		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName.data(), _colName.size(), &nameLen, &bindType,
 						&bindSize, &dp, &nullable))) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
-		Glib::ustring colName((const char *)_colName, nameLen);
+		Glib::ustring colName((const char *)_colName.data(), nameLen);
 		DB::Column * ncol;
 		switch (bindType) {
 			case SQL_DECIMAL:

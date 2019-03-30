@@ -1,12 +1,14 @@
 #include "odbc-error.h"
 #include <compileTimeFormatter.h>
+#include <array>
 
 namespace AdHoc {
 	StreamWriterT('5') {
-		template<typename ... Pn>
-		static void write(stream & s, const SQLCHAR sqlstatus[6], const Pn & ... pn)
+		template<std::size_t l, typename ... Pn>
+		static void write(stream & s, const std::array<SQLCHAR, l> & sqlstatus, const Pn & ... pn)
 		{
-			s.write(reinterpret_cast<const char *>(sqlstatus), 5);
+			static_assert(l > 5);
+			s.write((const char * const)sqlstatus.data(), 5);
 			StreamWriter::next(s, pn...);
 		}
 	};
@@ -18,16 +20,15 @@ AdHocFormatter(ODBCErrorNoData, "(%?) No error data available for record");
 AdHocFormatter(ODBCError, "Failed to get diagnostics for return code %?");
 ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 {
-	SQLCHAR     sqlstatus[6];
+	std::array<SQLCHAR, 6> sqlstatus {};
 	SQLINTEGER  sqlerr;
-	SQLCHAR     sqlerrmsg[12800];
+	std::array<SQLCHAR, 12800> sqlerrmsg {};
 
-	// NOLINTNEXTLINE(hicpp-no-array-decay)
-	SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus, &sqlerr, sqlerrmsg, sizeof(sqlerrmsg), nullptr);
+	SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus.data(), &sqlerr, sqlerrmsg.data(), sqlerrmsg.size(), nullptr);
 	switch (rc) {
 		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
-			msg = ODBCErrorWithInfo::get(err, sqlerr, sqlstatus, sqlerrmsg);
+			msg = ODBCErrorWithInfo::get(err, sqlerr, sqlstatus, sqlerrmsg.data());
 			break;
 
 		case SQL_INVALID_HANDLE:

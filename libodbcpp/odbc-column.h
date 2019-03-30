@@ -34,7 +34,7 @@ namespace ODBC {
 			virtual operator struct tm () const { throw std::bad_cast(); }
 			virtual operator SQL_TIMESTAMP_STRUCT () const { throw std::bad_cast(); }
 
-			bool isNull() const override;
+			[[nodiscard]] bool isNull() const override;
 			virtual void apply(DB::HandleField &) const override = 0;
 
 			const SelectCommand *	selectCmd;
