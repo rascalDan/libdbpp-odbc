@@ -1,6 +1,5 @@
 import package ;
 
-lib odbc : : <name>odbc ;
 lib adhocutil : : : : <include>/usr/include/adhocutil ;
 lib dbppcore : : : : <include>/usr/include/dbpp ;
 lib boost_date_time ;
@@ -9,7 +8,7 @@ lib boost_system ;
 lib dbpp-odbc :
 	[ glob *.cpp ] :
 	<library>..//glibmm
-	<library>odbc
+	<library>..//odbc
 	<library>adhocutil
 	<library>dbppcore
 	<library>boost_date_time
