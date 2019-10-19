@@ -19,6 +19,7 @@ project
 			<variant>debug:<warnings>extra
 			<variant>debug:<warnings-as-errors>on
 			<variant>coverage:<coverage>on
+			<toolset>tidy:<xcheckxx>hicpp-signed-bitwise
 	;
 
 lib dbpp-odbc :
