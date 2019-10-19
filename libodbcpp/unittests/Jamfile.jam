@@ -13,7 +13,8 @@ run
 	<define>BOOST_TEST_DYN_LINK
 	<library>..//dbpp-odbc
 	<library>..//adhocutil
-	<library>dbpptestcore
+	<local-dbppcore>yes:<library>../../..//dbpptestcore
+	<local-dbppcore>no:<library>dbpptestcore
 	<library>boost_utf
 	<library>stdc++fs
 	:
