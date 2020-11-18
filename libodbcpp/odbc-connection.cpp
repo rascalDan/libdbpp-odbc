@@ -1,23 +1,20 @@
-#include <sqlext.h>
-#include <stdexcept>
+#include "odbc-connection.h"
+#include "error.h"
+#include "odbc-modifycommand.h"
+#include "odbc-selectcommand.h"
 #include <cstdio>
 #include <cstring>
-#include "odbc-connection.h"
-#include "odbc-selectcommand.h"
-#include "odbc-modifycommand.h"
-#include "error.h"
+#include <sqlext.h>
+#include <stdexcept>
 
 NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory);
 
-ODBC::Connection::Connection(const DSN& d) :
-	env(nullptr),
-	conn(nullptr),
-	thinkDelStyle(DB::BulkDeleteUsingUsing),
-	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
+ODBC::Connection::Connection(const DSN & d) :
+	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
-	RETCODE dberr = SQLConnect(conn, (SQLCHAR*)d.dsn.c_str(), SQL_NTS,
-			(SQLCHAR*)d.username.c_str(), SQL_NTS, (SQLCHAR*)d.password.c_str(), SQL_NTS);
+	RETCODE dberr = SQLConnect(conn, (SQLCHAR *)d.dsn.c_str(), SQL_NTS, (SQLCHAR *)d.username.c_str(), SQL_NTS,
+			(SQLCHAR *)d.password.c_str(), SQL_NTS);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
@@ -32,7 +29,7 @@ ODBC::Connection::connectPre()
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
-	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *)SQL_OV_ODBC3, 0);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
@@ -69,13 +66,11 @@ ODBC::Connection::connectPost()
 }
 
 ODBC::Connection::Connection(const std::string & s) :
-	env(nullptr),
-	conn(nullptr),
-	thinkDelStyle(DB::BulkDeleteUsingUsing),
-	thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
+	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
-	RETCODE dberr = SQLDriverConnect(conn, nullptr, (SQLCHAR*)s.c_str(), s.length(), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
+	RETCODE dberr = SQLDriverConnect(
+			conn, nullptr, (SQLCHAR *)s.c_str(), s.length(), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
@@ -187,8 +182,6 @@ ODBC::Connection::ping() const
 }
 
 ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle) :
-	ODBC::Error(err, handletype, handle),
-	DB::ConnectionError()
+	ODBC::Error(err, handletype, handle), DB::ConnectionError()
 {
 }
-

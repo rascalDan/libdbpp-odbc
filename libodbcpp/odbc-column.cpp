@@ -1,14 +1,12 @@
-#include <sqlext.h>
-#include <cstdio>
-#include <cstdlib>
 #include "odbc-column.h"
 #include "odbc-command.h"
-#include "odbc-selectcommand.h"
 #include "odbc-error.h"
+#include "odbc-selectcommand.h"
+#include <cstdio>
+#include <cstdlib>
+#include <sqlext.h>
 
-ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i) :
-	DB::Column(s, i),
-	selectCmd(sc)
+ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i) : DB::Column(s, i), selectCmd(sc)
 {
 	bindLen = 0;
 }
@@ -51,14 +49,12 @@ ODBC::Column::bind()
 
 ODBC::TimeStampColumn::operator boost::posix_time::ptime() const
 {
-	return boost::posix_time::ptime(
-						boost::gregorian::date(data.year, data.month, data.day),
-						boost::posix_time::time_duration(data.hour, data.minute, data.second, data.fraction));
+	return boost::posix_time::ptime(boost::gregorian::date(data.year, data.month, data.day),
+			boost::posix_time::time_duration(data.hour, data.minute, data.second, data.fraction));
 }
 ODBC::IntervalColumn::operator boost::posix_time::time_duration() const
 {
-	auto dur = boost::posix_time::time_duration(
-			(24 * data.intval.day_second.day) + data.intval.day_second.hour,
+	auto dur = boost::posix_time::time_duration((24 * data.intval.day_second.day) + data.intval.day_second.hour,
 			data.intval.day_second.minute, data.intval.day_second.second, data.intval.day_second.fraction);
 	return (data.interval_sign ? -dur : dur);
 }
@@ -84,7 +80,7 @@ ODBC::CharArrayColumn::apply(DB::HandleField & h) const
 	if (isNull()) {
 		return h.null();
 	}
-	h.string({ data.data(), (std::size_t)bindLen });
+	h.string({data.data(), (std::size_t)bindLen});
 }
 void
 ODBC::TimeStampColumn::apply(DB::HandleField & h) const

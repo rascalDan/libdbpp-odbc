@@ -1,30 +1,30 @@
 #define BOOST_TEST_MODULE TestODBC
 #include <boost/test/unit_test.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <column.h>
 #include <definedDirs.h>
+#include <error.h>
 #include <modifycommand.h>
+#include <odbc-mock.h>
 #include <selectcommand.h>
 #include <selectcommandUtil.impl.h>
-#include <column.h>
-#include <error.h>
-#include <odbc-mock.h>
 #include <testCore.h>
-#include <definedDirs.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 class StandardMockDatabase : public DB::PluginMock<ODBC::Mock> {
-	public:
-		StandardMockDatabase() : DB::PluginMock<ODBC::Mock>( "odbcmock", { rootDir / "odbcschema.sql" },
+public:
+	StandardMockDatabase() :
+		DB::PluginMock<ODBC::Mock>("odbcmock", {rootDir / "odbcschema.sql"},
 				"Driver=psqlodbcw.so;uid=postgres;servername=/run/postgresql", "Database=postgres")
-		{
-		}
+	{
+	}
 };
 
-BOOST_GLOBAL_FIXTURE( StandardMockDatabase );
+BOOST_GLOBAL_FIXTURE(StandardMockDatabase);
 
-BOOST_FIXTURE_TEST_SUITE( Core, DB::TestCore );
+BOOST_FIXTURE_TEST_SUITE(Core, DB::TestCore);
 
-BOOST_AUTO_TEST_CASE( transactions )
+BOOST_AUTO_TEST_CASE(transactions)
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( transactions )
 	BOOST_REQUIRE_EQUAL(false, ro->inTx());
 }
 
-BOOST_AUTO_TEST_CASE( bindAndSend )
+BOOST_AUTO_TEST_CASE(bindAndSend)
 {
 	auto rw = DB::MockDatabase::openConnectionTo("odbcmock");
 
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE( bindAndSend )
 	BOOST_CHECK_EQUAL(1, mod->execute());
 }
 
-BOOST_AUTO_TEST_CASE( bindAndSelect )
+BOOST_AUTO_TEST_CASE(bindAndSelect)
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( bindAndSelect )
 	BOOST_REQUIRE_EQUAL(1, rows);
 }
 
-BOOST_AUTO_TEST_CASE( bindAndSelectOther )
+BOOST_AUTO_TEST_CASE(bindAndSelectOther)
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
@@ -85,13 +85,14 @@ BOOST_AUTO_TEST_CASE( bindAndSelectOther )
 		assertColumnValueHelper(*select, 1, 123.45);
 		assertColumnValueHelper(*select, 2, std::string_view("some text"));
 		// assertColumnValueHelper(*select, 3, true);
-		assertColumnValueHelper(*select, 4, boost::posix_time::ptime_from_tm({ 3, 6, 23, 27, 3, 115, 0, 0, 0, 0, nullptr}));
+		assertColumnValueHelper(
+				*select, 4, boost::posix_time::ptime_from_tm({3, 6, 23, 27, 3, 115, 0, 0, 0, 0, nullptr}));
 		rows += 1;
 	}
 	BOOST_REQUIRE_EQUAL(1, rows);
 }
 
-BOOST_AUTO_TEST_CASE( multibyte )
+BOOST_AUTO_TEST_CASE(multibyte)
 {
 	auto ro = DB::MockDatabase::openConnectionTo("odbcmock");
 
@@ -106,4 +107,3 @@ BOOST_AUTO_TEST_CASE( multibyte )
 }
 
 BOOST_AUTO_TEST_SUITE_END();
-

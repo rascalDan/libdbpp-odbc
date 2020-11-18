@@ -1,26 +1,14 @@
-#include <sqlext.h>
 #include "odbc-param.h"
 #include "odbc-command.h"
 #include "odbc-error.h"
 #include <cstring>
+#include <sqlext.h>
 
-ODBC::Param::Param() :
-	paramCmd(nullptr),
-	paramIdx(0),
-	paramBound(false),
-	dataLength(0)
-{
-}
+ODBC::Param::Param() : paramCmd(nullptr), paramIdx(0), paramBound(false), dataLength(0) { }
 
-ODBC::Param::Param(Command * c, unsigned int i) :
-	paramCmd(c),
-	paramIdx(i),
-	paramBound(false),
-	dataLength(0)
-{
-}
+ODBC::Param::Param(Command * c, unsigned int i) : paramCmd(c), paramIdx(i), paramBound(false), dataLength(0) { }
 
-template <class ParamType>
+template<class ParamType>
 ParamType *
 ODBC::Command::makeParam(unsigned int idx)
 {
@@ -29,7 +17,7 @@ ODBC::Command::makeParam(unsigned int idx)
 	}
 	auto & p = params[idx];
 	if (p) {
-		if (auto np = dynamic_cast<ParamType*>(p.get())) {
+		if (auto np = dynamic_cast<ParamType *>(p.get())) {
 			return np;
 		}
 	}
@@ -41,8 +29,8 @@ void
 ODBC::Param::bind() const
 {
 	if (!paramBound) {
-		RETCODE rc = SQLBindParameter(paramCmd->hStmt, paramIdx + 1, SQL_PARAM_INPUT, ctype(), stype(),
-				size(), dp(), const_cast<void *>(dataAddress()), size(), &bindLen);
+		RETCODE rc = SQLBindParameter(paramCmd->hStmt, paramIdx + 1, SQL_PARAM_INPUT, ctype(), stype(), size(), dp(),
+				const_cast<void *>(dataAddress()), size(), &bindLen);
 		if (!SQL_SUCCEEDED(rc)) {
 			throw Error(rc, SQL_HANDLE_STMT, paramCmd->hStmt);
 		}
@@ -51,13 +39,12 @@ ODBC::Param::bind() const
 }
 
 #define SIMPLEBINDER(ctype, otype, suf) \
-void \
-ODBC::Command::bindParam##suf(unsigned int i, ctype val) \
-{ \
-	ODBC::otype * p = makeParam<ODBC::otype>(i); \
-	*p = val; \
-	p->bind(); \
-}
+	void ODBC::Command::bindParam##suf(unsigned int i, ctype val) \
+	{ \
+		ODBC::otype * p = makeParam<ODBC::otype>(i); \
+		*p = val; \
+		p->bind(); \
+	}
 SIMPLEBINDER(int, SignedIntegerParam, I);
 SIMPLEBINDER(long, SignedIntegerParam, I);
 SIMPLEBINDER(long long, SignedIntegerParam, I);
@@ -135,4 +122,3 @@ ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
 	data.intval.day_second.fraction = d.fractional_seconds();
 	return *this;
 }
-

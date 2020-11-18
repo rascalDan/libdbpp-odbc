@@ -2,9 +2,7 @@
 #include "odbc-error.h"
 
 ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection & c, const std::string & sql) :
-	DB::Command(sql),
-	ODBC::Command(c, sql),
-	DB::ModifyCommand(sql)
+	DB::Command(sql), ODBC::Command(c, sql), DB::ModifyCommand(sql)
 {
 }
 
@@ -27,4 +25,3 @@ ODBC::ModifyCommand::execute(bool anc)
 	}
 	throw DB::NoRowsAffected();
 }
-

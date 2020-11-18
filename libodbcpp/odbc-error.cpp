@@ -1,11 +1,12 @@
 #include "odbc-error.h"
-#include <compileTimeFormatter.h>
 #include <array>
+#include <compileTimeFormatter.h>
 
 namespace AdHoc {
 	StreamWriterT('5') {
-		template<std::size_t l, typename ... Pn>
-		static void write(stream & s, const std::array<SQLCHAR, l> & sqlstatus, const Pn & ... pn)
+		template<std::size_t l, typename... Pn>
+		static void
+		write(stream & s, const std::array<SQLCHAR, l> & sqlstatus, const Pn &... pn)
 		{
 			static_assert(l > 5);
 			s.write((const char * const)sqlstatus.data(), 5);
@@ -21,10 +22,11 @@ AdHocFormatter(ODBCError, "Failed to get diagnostics for return code %?");
 ODBC::Error::Error(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle)
 {
 	std::array<SQLCHAR, 6> sqlstatus {};
-	SQLINTEGER  sqlerr;
+	SQLINTEGER sqlerr;
 	std::array<SQLCHAR, 12800> sqlerrmsg {};
 
-	SQLRETURN rc = SQLGetDiagRec(handletype, handle, 1, sqlstatus.data(), &sqlerr, sqlerrmsg.data(), sqlerrmsg.size(), nullptr);
+	SQLRETURN rc = SQLGetDiagRec(
+			handletype, handle, 1, sqlstatus.data(), &sqlerr, sqlerrmsg.data(), sqlerrmsg.size(), nullptr);
 	switch (rc) {
 		case SQL_SUCCESS:
 		case SQL_SUCCESS_WITH_INFO:
@@ -51,4 +53,3 @@ ODBC::Error::message() const noexcept
 {
 	return msg;
 }
-

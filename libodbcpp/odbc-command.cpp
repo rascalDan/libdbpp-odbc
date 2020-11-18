@@ -3,10 +3,7 @@
 #include "odbc-param.h"
 #include <sqlext.h>
 
-ODBC::Command::Command(const Connection & c, const std::string & s) :
-	DB::Command(s),
-	hStmt(nullptr),
-	connection(c)
+ODBC::Command::Command(const Connection & c, const std::string & s) : DB::Command(s), hStmt(nullptr), connection(c)
 {
 	RETCODE rc = SQLAllocHandle(SQL_HANDLE_STMT, c.conn, &hStmt);
 	if (!SQL_SUCCEEDED(rc)) {
@@ -16,7 +13,7 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 	if (!SQL_SUCCEEDED(rc)) {
 		throw ConnectionError(rc, SQL_HANDLE_STMT, hStmt);
 	}
-	rc = SQLPrepare(hStmt, (SQLCHAR*)sql.c_str(), sql.length());
+	rc = SQLPrepare(hStmt, (SQLCHAR *)sql.c_str(), sql.length());
 	if (!SQL_SUCCEEDED(rc)) {
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
@@ -29,4 +26,3 @@ ODBC::Command::Command(const Connection & c, const std::string & s) :
 	}
 	params.resize(pcount);
 }
-

@@ -1,15 +1,13 @@
 #include "odbc-selectcommand.h"
-#include "odbc-error.h"
 #include "odbc-column.h"
-#include <sqlext.h>
-#include <cstring>
-#include <boost/multi_index_container.hpp>
+#include "odbc-error.h"
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index_container.hpp>
+#include <cstring>
+#include <sqlext.h>
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
-	DB::Command(s),
-	ODBC::Command(c, s),
-	DB::SelectCommand(s)
+	DB::Command(s), ODBC::Command(c, s), DB::SelectCommand(s)
 {
 }
 
@@ -26,7 +24,7 @@ ODBC::SelectCommand::fetch()
 	return fetch(SQL_FETCH_NEXT, 0);
 }
 
-constexpr std::array<SQLCHAR, 6> truncated = { '0', '1', '0', '0', '4', '\0' };
+constexpr std::array<SQLCHAR, 6> truncated = {'0', '1', '0', '0', '4', '\0'};
 bool
 ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 {
@@ -36,31 +34,29 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
 	switch (rc) {
 		case SQL_SUCCESS_WITH_INFO:
-		default:
-			{
-				std::array<SQLCHAR, 6> sqlstatus {};
-				RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus.data(), nullptr, nullptr, 0, nullptr);
-				if (SQL_SUCCEEDED(diagrc)) {
-					if (sqlstatus == truncated) {
-						for (const auto & c : largeColumns) {
-							c->resize();
-						}
-						return fetch(SQL_FETCH_RELATIVE, 0);
+		default: {
+			std::array<SQLCHAR, 6> sqlstatus {};
+			RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus.data(), nullptr, nullptr, 0, nullptr);
+			if (SQL_SUCCEEDED(diagrc)) {
+				if (sqlstatus == truncated) {
+					for (const auto & c : largeColumns) {
+						c->resize();
 					}
-				}
-			}
-			[[ fallthrough ]];
-		case SQL_SUCCESS:
-			{
-				bool resized = false;
-				for (const auto & c : largeColumns) {
-					resized |= c->resize();
-				}
-				if (resized) {
 					return fetch(SQL_FETCH_RELATIVE, 0);
 				}
-				return true;
 			}
+		}
+			[[fallthrough]];
+		case SQL_SUCCESS: {
+			bool resized = false;
+			for (const auto & c : largeColumns) {
+				resized |= c->resize();
+			}
+			if (resized) {
+				return fetch(SQL_FETCH_RELATIVE, 0);
+			}
+			return true;
+		}
 		case SQL_NO_DATA:
 			return false;
 	}
@@ -84,7 +80,7 @@ ODBC::SelectCommand::execute()
 		int sqlcol = col + 1;
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName.data(), _colName.size(), &nameLen, &bindType,
-						&bindSize, &dp, &nullable))) {
+								   &bindSize, &dp, &nullable))) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
 		Glib::ustring colName((const char *)_colName.data(), nameLen);
@@ -129,7 +125,8 @@ ODBC::SelectCommand::execute()
 				throw DB::ColumnTypeNotSupported();
 			default:
 				SQLLEN octetSize = 0;
-				if (!SQL_SUCCEEDED(rc = SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, nullptr, 0, nullptr, &octetSize))) {
+				if (!SQL_SUCCEEDED(rc
+							= SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, nullptr, 0, nullptr, &octetSize))) {
 					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
 				bindSize = octetSize;
@@ -141,4 +138,3 @@ ODBC::SelectCommand::execute()
 		dynamic_cast<Column *>(ncol)->bind();
 	}
 }
-
