@@ -4,6 +4,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index_container.hpp>
 #include <cstring>
+#include <numeric>
 #include <sqlext.h>
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
@@ -18,23 +19,19 @@ ODBC::SelectCommand::~SelectCommand()
 	}
 }
 
-bool
-ODBC::SelectCommand::fetch()
-{
-	return fetch(SQL_FETCH_NEXT, 0);
-}
-
 constexpr std::array<SQLCHAR, 6> truncated = {'0', '1', '0', '0', '4', '\0'};
 bool
-ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
+ODBC::SelectCommand::fetch()
 {
 	if (!columnCount()) {
 		execute();
 	}
-	RETCODE rc = SQLFetchScroll(hStmt, orientation, offset);
-	switch (rc) {
-		case SQL_SUCCESS_WITH_INFO:
-		default: {
+	for (RETCODE rc = SQLFetchScroll(hStmt, SQL_FETCH_NEXT, 0); rc != SQL_NO_DATA;
+			rc = SQLFetchScroll(hStmt, SQL_FETCH_RELATIVE, 0)) {
+		if (!SQL_SUCCEEDED(rc)) {
+			throw Error(rc, SQL_HANDLE_STMT, hStmt);
+		}
+		if (rc != SQL_SUCCESS) {
 			std::array<SQLCHAR, 6> sqlstatus {};
 			RETCODE diagrc = SQLGetDiagRec(SQL_HANDLE_STMT, hStmt, 1, sqlstatus.data(), nullptr, nullptr, 0, nullptr);
 			if (SQL_SUCCEEDED(diagrc)) {
@@ -42,24 +39,18 @@ ODBC::SelectCommand::fetch(SQLSMALLINT orientation, SQLLEN offset)
 					for (const auto & c : largeColumns) {
 						c->resize();
 					}
-					return fetch(SQL_FETCH_RELATIVE, 0);
+					continue;
 				}
 			}
 		}
-			[[fallthrough]];
-		case SQL_SUCCESS: {
-			bool resized = false;
-			for (const auto & c : largeColumns) {
-				resized |= c->resize();
-			}
-			if (resized) {
-				return fetch(SQL_FETCH_RELATIVE, 0);
-			}
-			return true;
+		if (std::accumulate(largeColumns.begin(), largeColumns.end(), false, [](auto && resized, auto && c) {
+				return resized |= c->resize();
+			})) {
+			continue;
 		}
-		case SQL_NO_DATA:
-			return false;
+		return true;
 	}
+	return false;
 }
 
 void
