@@ -75,8 +75,8 @@ ODBC::StdStringParam::operator=(Glib::ustring const & d)
 	const char * addr = data.data();
 	data = d;
 	bindLen = d.bytes();
-	paramBound &= (addr == data.data());
-	if (!paramBound) {
+	// cppcheck-suppress invalidContainer
+	if (addr != data.data()) {
 		paramBound = false;
 		bind();
 	}
@@ -89,8 +89,8 @@ ODBC::StdStringParam::operator=(std::string_view const & d)
 	const char * addr = data.data();
 	data = d;
 	bindLen = d.length();
-	paramBound &= (addr == data.data());
-	if (!paramBound) {
+	// cppcheck-suppress invalidContainer
+	if (addr != data.data()) {
 		paramBound = false;
 		bind();
 	}
