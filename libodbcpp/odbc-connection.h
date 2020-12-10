@@ -15,9 +15,9 @@ namespace ODBC {
 
 	class Connection : public DB::Connection {
 	public:
-		Connection(const DSN & d);
-		Connection(const std::string & str);
-		~Connection();
+		explicit Connection(const DSN & d);
+		explicit Connection(const std::string & str);
+		~Connection() override;
 		SQLHENV env;
 		SQLHDBC conn;
 
