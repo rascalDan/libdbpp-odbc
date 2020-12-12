@@ -80,7 +80,7 @@ namespace ODBC {
 	};
 	class CharArrayColumn : public Column, public Param {
 	public:
-		typedef std::vector<char> CharArray;
+		using CharArray = std::vector<char>;
 		CharArrayColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i, SQLULEN sizeHint) :
 			DB::Column(n, i), Column(sc, n, i)
 		{
