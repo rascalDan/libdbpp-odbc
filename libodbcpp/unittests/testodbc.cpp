@@ -50,6 +50,7 @@ BOOST_AUTO_TEST_CASE(bindAndSend)
 	mod->bindParamS(2, testString);
 	mod->bindParamB(3, testBool);
 	mod->bindParamT(4, testDateTime);
+	// cppcheck-suppress assertWithSideEffect
 	BOOST_CHECK_EQUAL(1, mod->execute());
 }
 
