@@ -56,7 +56,7 @@ ODBC::SelectCommand::fetch()
 void
 ODBC::SelectCommand::execute()
 {
-	RETCODE rc = SQLExecute(hStmt);
+	SQLRETURN rc = SQLExecute(hStmt);
 	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
@@ -64,17 +64,18 @@ ODBC::SelectCommand::execute()
 	if (!SQL_SUCCEEDED(rc = SQLNumResultCols(hStmt, &colCount))) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
-	for (int col = 0; col < colCount; col++) {
+	for (SQLUSMALLINT col = 0; col < colCount; col++) {
 		std::array<SQLCHAR, 300> _colName {};
 		SQLSMALLINT nameLen, dp, nullable, bindType;
 		SQLULEN bindSize;
-		int sqlcol = col + 1;
+		SQLUSMALLINT sqlcol = col + 1;
 		// NOLINTNEXTLINE(hicpp-no-array-decay)
 		if (!SQL_SUCCEEDED(rc = SQLDescribeCol(hStmt, sqlcol, _colName.data(), _colName.size(), &nameLen, &bindType,
 								   &bindSize, &dp, &nullable))) {
 			throw Error(rc, SQL_HANDLE_STMT, hStmt);
 		}
-		Glib::ustring colName((const char *)_colName.data(), nameLen);
+		Glib::ustring colName(
+				reinterpret_cast<const char *>(_colName.data()), static_cast<Glib::ustring::size_type>(nameLen));
 		DB::Column * ncol;
 		switch (bindType) {
 			case SQL_DECIMAL:
@@ -120,7 +121,7 @@ ODBC::SelectCommand::execute()
 							= SQLColAttribute(hStmt, sqlcol, SQL_DESC_OCTET_LENGTH, nullptr, 0, nullptr, &octetSize))) {
 					throw Error(rc, SQL_HANDLE_STMT, hStmt);
 				}
-				bindSize = octetSize;
+				bindSize = static_cast<decltype(bindSize)>(octetSize);
 				auto lc = std::make_unique<CharArrayColumn>(this, colName, col, bindSize);
 				largeColumns.insert(lc.get());
 				ncol = insertColumn(std::move(lc)).get();

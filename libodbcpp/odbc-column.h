@@ -18,58 +18,6 @@ namespace ODBC {
 		virtual void * rwDataAddress() = 0;
 		virtual bool resize();
 
-		virtual operator int() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator long() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator long long() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator unsigned int() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator unsigned long() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator unsigned long long() const
-		{
-			throw std::bad_cast();
-		}
-
-		virtual operator double() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator float() const
-		{
-			throw std::bad_cast();
-		}
-
-		virtual operator std::string() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator Glib::ustring() const
-		{
-			throw std::bad_cast();
-		}
-
-		virtual operator struct tm() const
-		{
-			throw std::bad_cast();
-		}
-		virtual operator SQL_TIMESTAMP_STRUCT() const
-		{
-			throw std::bad_cast();
-		}
-
 		[[nodiscard]] bool isNull() const override;
 		virtual void apply(DB::HandleField &) const override = 0;
 
@@ -86,47 +34,39 @@ namespace ODBC {
 		{
 			data.resize(std::max<SQLULEN>(sizeHint, 64) + 1);
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		ctype() const override
 		{
 			return SQL_C_CHAR;
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		stype() const override
 		{
 			return SQL_CHAR;
 		}
-		virtual SQLULEN
+		SQLULEN
 		size() const override
 		{
 			return data.size();
 		}
-		virtual SQLINTEGER
+		SQLSMALLINT
 		dp() const override
 		{
 			return 0;
 		}
-		virtual const void *
+		const void *
 		dataAddress() const override
 		{
 			return &data.front();
 		}
-		virtual void *
+		void *
 		rwDataAddress() override
 		{
 			return &data.front();
 		}
 		void operator=(const Glib::ustring & d);
 		bool resize() override;
-		virtual operator std::string() const override
-		{
-			return std::string(&data.front(), bindLen);
-		}
-		virtual operator Glib::ustring() const override
-		{
-			return std::string(&data.front(), bindLen);
-		}
-		virtual void apply(DB::HandleField &) const override;
+		void apply(DB::HandleField &) const override;
 
 	protected:
 		virtual const Param *
@@ -142,45 +82,33 @@ namespace ODBC {
 			DB::Column(n, i), Column(sc, n, i)
 		{
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		ctype() const override
 		{
 			return SignedIntegerParam::ctype();
 		}
-		virtual SQLULEN
+		SQLULEN
 		size() const override
 		{
 			return SignedIntegerParam::size();
 		}
-		virtual void *
+		void *
 		rwDataAddress() override
 		{
 			return &data;
 		}
-		virtual operator int() const override
-		{
-			return data;
-		}
-		virtual operator long() const override
-		{
-			return data;
-		}
-		virtual operator long long() const override
-		{
-			return data;
-		}
-		virtual const Param *
+		const Param *
 		meAsAParam() const override
 		{
 			return this;
 		}
-		virtual void apply(DB::HandleField &) const override;
+		void apply(DB::HandleField &) const override;
 	};
 #ifdef COMPLETENESS
 	class UnsignedIntegerColumn : public Column, public UnsignedIntegerParam {
 	public:
 		UnsignedIntegerColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) : Column(sc, n, i) { }
-		virtual const Param *
+		const Param *
 		meAsAParam() const override
 		{
 			return this;
@@ -193,63 +121,54 @@ namespace ODBC {
 			DB::Column(n, i), Column(sc, n, i)
 		{
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		ctype() const override
 		{
 			return FloatingPointParam::ctype();
 		}
-		virtual SQLULEN
+		SQLULEN
 		size() const override
 		{
 			return FloatingPointParam::size();
 		}
-		virtual void *
+		void *
 		rwDataAddress() override
 		{
 			return &data;
 		}
-		virtual operator double() const override
-		{
-			return data;
-		}
-		virtual operator float() const override
-		{
-			return data;
-		}
-		virtual const Param *
+		const Param *
 		meAsAParam() const override
 		{
 			return this;
 		}
-		virtual void apply(DB::HandleField &) const override;
+		void apply(DB::HandleField &) const override;
 	};
 	class IntervalColumn : public Column, public IntervalParam {
 	public:
 		IntervalColumn(SelectCommand * sc, const Glib::ustring & n, unsigned int i) : DB::Column(n, i), Column(sc, n, i)
 		{
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		ctype() const override
 		{
 			return IntervalParam::ctype();
 		}
-		virtual SQLULEN
+		SQLULEN
 		size() const override
 		{
 			return IntervalParam::size();
 		}
-		virtual void *
+		void *
 		rwDataAddress() override
 		{
 			return &data;
 		}
-		virtual operator boost::posix_time::time_duration() const;
-		virtual const Param *
+		const Param *
 		meAsAParam() const override
 		{
 			return this;
 		}
-		virtual void apply(DB::HandleField &) const override;
+		void apply(DB::HandleField &) const override;
 	};
 	class TimeStampColumn : public Column, public TimeStampParam {
 	public:
@@ -257,28 +176,27 @@ namespace ODBC {
 			DB::Column(n, i), Column(sc, n, i)
 		{
 		}
-		virtual SQLSMALLINT
+		SQLSMALLINT
 		ctype() const override
 		{
 			return TimeStampParam::ctype();
 		}
-		virtual SQLULEN
+		SQLULEN
 		size() const override
 		{
 			return TimeStampParam::size();
 		}
-		virtual void *
+		void *
 		rwDataAddress() override
 		{
 			return &data;
 		}
-		virtual operator boost::posix_time::ptime() const;
-		virtual const Param *
+		const Param *
 		meAsAParam() const override
 		{
 			return this;
 		}
-		virtual void apply(DB::HandleField &) const override;
+		void apply(DB::HandleField &) const override;
 	};
 }
 

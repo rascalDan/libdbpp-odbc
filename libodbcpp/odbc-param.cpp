@@ -29,8 +29,9 @@ void
 ODBC::Param::bind() const
 {
 	if (!paramBound) {
-		RETCODE rc = SQLBindParameter(paramCmd->hStmt, paramIdx + 1, SQL_PARAM_INPUT, ctype(), stype(), size(), dp(),
-				const_cast<void *>(dataAddress()), size(), &bindLen);
+		SQLRETURN rc = SQLBindParameter(paramCmd->hStmt, static_cast<SQLUSMALLINT>(paramIdx + 1), SQL_PARAM_INPUT,
+				ctype(), stype(), size(), dp(), const_cast<void *>(dataAddress()), static_cast<SQLLEN>(size()),
+				&bindLen);
 		if (!SQL_SUCCEEDED(rc)) {
 			throw Error(rc, SQL_HANDLE_STMT, paramCmd->hStmt);
 		}
@@ -45,23 +46,23 @@ ODBC::Param::bind() const
 		*p = val; \
 		p->bind(); \
 	}
-SIMPLEBINDER(int, SignedIntegerParam, I);
-SIMPLEBINDER(long, SignedIntegerParam, I);
-SIMPLEBINDER(long long, SignedIntegerParam, I);
-SIMPLEBINDER(unsigned int, UnsignedIntegerParam, I);
-SIMPLEBINDER(unsigned long int, UnsignedIntegerParam, I);
-SIMPLEBINDER(unsigned long long int, UnsignedIntegerParam, I);
+SIMPLEBINDER(int, SignedIntegerParam, I)
+SIMPLEBINDER(long, SignedIntegerParam, I)
+SIMPLEBINDER(long long, SignedIntegerParam, I)
+SIMPLEBINDER(unsigned int, UnsignedIntegerParam, I)
+SIMPLEBINDER(unsigned long int, UnsignedIntegerParam, I)
+SIMPLEBINDER(unsigned long long int, UnsignedIntegerParam, I)
 
-SIMPLEBINDER(bool, BooleanParam, B);
+SIMPLEBINDER(bool, BooleanParam, B)
 
-SIMPLEBINDER(double, FloatingPointParam, F);
-SIMPLEBINDER(float, FloatingPointParam, F);
+SIMPLEBINDER(double, FloatingPointParam, F)
+SIMPLEBINDER(float, FloatingPointParam, F)
 
-SIMPLEBINDER(const Glib::ustring &, StdStringParam, S);
-SIMPLEBINDER(const std::string_view &, StdStringParam, S);
+SIMPLEBINDER(const Glib::ustring &, StdStringParam, S)
+SIMPLEBINDER(const std::string_view &, StdStringParam, S)
 
-SIMPLEBINDER(const boost::posix_time::ptime &, TimeStampParam, T);
-SIMPLEBINDER(const boost::posix_time::time_duration &, IntervalParam, T);
+SIMPLEBINDER(const boost::posix_time::ptime &, TimeStampParam, T)
+SIMPLEBINDER(const boost::posix_time::time_duration &, IntervalParam, T)
 
 void
 ODBC::Command::bindNull(unsigned int i)
@@ -74,7 +75,7 @@ ODBC::StdStringParam::operator=(Glib::ustring const & d)
 {
 	const char * addr = data.data();
 	data = d;
-	bindLen = d.bytes();
+	bindLen = static_cast<SQLLEN>(d.bytes());
 	// cppcheck-suppress invalidContainer
 	if (addr != data.data()) {
 		paramBound = false;
@@ -88,7 +89,7 @@ ODBC::StdStringParam::operator=(std::string_view const & d)
 {
 	const char * addr = data.data();
 	data = d;
-	bindLen = d.length();
+	bindLen = static_cast<SQLLEN>(d.length());
 	// cppcheck-suppress invalidContainer
 	if (addr != data.data()) {
 		paramBound = false;
@@ -100,13 +101,13 @@ ODBC::StdStringParam::operator=(std::string_view const & d)
 ODBC::TimeStampParam &
 ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
 {
-	data.year = d.date().year();
+	data.year = static_cast<SQLSMALLINT>(d.date().year());
 	data.month = d.date().month();
 	data.day = d.date().day();
-	data.hour = d.time_of_day().hours();
-	data.minute = d.time_of_day().minutes();
-	data.second = d.time_of_day().seconds();
-	data.fraction = d.time_of_day().fractional_seconds();
+	data.hour = static_cast<SQLUSMALLINT>(d.time_of_day().hours());
+	data.minute = static_cast<SQLUSMALLINT>(d.time_of_day().minutes());
+	data.second = static_cast<SQLUSMALLINT>(d.time_of_day().seconds());
+	data.fraction = static_cast<SQLUSMALLINT>(d.time_of_day().fractional_seconds());
 	return *this;
 }
 
@@ -115,10 +116,10 @@ ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
 {
 	data.interval_type = SQL_IS_DAY_TO_SECOND;
 	data.interval_sign = d.is_negative();
-	data.intval.day_second.day = d.hours() / 24;
-	data.intval.day_second.hour = d.hours() % 24;
-	data.intval.day_second.minute = d.minutes();
-	data.intval.day_second.second = d.seconds();
-	data.intval.day_second.fraction = d.fractional_seconds();
+	data.intval.day_second.day = static_cast<SQLUSMALLINT>(d.hours() / 24);
+	data.intval.day_second.hour = static_cast<SQLUSMALLINT>(d.hours() % 24);
+	data.intval.day_second.minute = static_cast<SQLUSMALLINT>(d.minutes());
+	data.intval.day_second.second = static_cast<SQLUSMALLINT>(d.seconds());
+	data.intval.day_second.fraction = static_cast<SQLUSMALLINT>(d.fractional_seconds());
 	return *this;
 }

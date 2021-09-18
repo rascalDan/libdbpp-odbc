@@ -13,7 +13,7 @@ namespace ODBC {
 		void bind() const;
 
 		virtual SQLSMALLINT stype() const = 0; // The SQL type ID
-		virtual SQLINTEGER dp() const = 0; // The decimal place count
+		virtual SQLSMALLINT dp() const = 0; // The decimal place count
 		virtual const void * dataAddress() const = 0; // The address of the data
 
 	protected:

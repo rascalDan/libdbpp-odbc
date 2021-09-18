@@ -21,7 +21,7 @@ bool
 ODBC::CharArrayColumn::resize()
 {
 	if (bindLen >= SQLLEN(data.size())) {
-		data.resize(bindLen + 1);
+		data.resize(static_cast<std::size_t>(bindLen + 1));
 		Column::bind();
 		if (paramCmd) {
 			paramBound = false;
@@ -41,23 +41,13 @@ ODBC::Column::isNull() const
 void
 ODBC::Column::bind()
 {
-	RETCODE rc = SQLBindCol(selectCmd->hStmt, colNo + 1, ctype(), rwDataAddress(), size(), &bindLen);
+	RETCODE rc = SQLBindCol(selectCmd->hStmt, static_cast<SQLUSMALLINT>(colNo + 1), ctype(), rwDataAddress(),
+			static_cast<SQLLEN>(size()), &bindLen);
 	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, selectCmd->hStmt);
 	}
 }
 
-ODBC::TimeStampColumn::operator boost::posix_time::ptime() const
-{
-	return boost::posix_time::ptime(boost::gregorian::date(data.year, data.month, data.day),
-			boost::posix_time::time_duration(data.hour, data.minute, data.second, data.fraction));
-}
-ODBC::IntervalColumn::operator boost::posix_time::time_duration() const
-{
-	auto dur = boost::posix_time::time_duration((24 * data.intval.day_second.day) + data.intval.day_second.hour,
-			data.intval.day_second.minute, data.intval.day_second.second, data.intval.day_second.fraction);
-	return (data.interval_sign ? -dur : dur);
-}
 void
 ODBC::SignedIntegerColumn::apply(DB::HandleField & h) const
 {
@@ -80,7 +70,7 @@ ODBC::CharArrayColumn::apply(DB::HandleField & h) const
 	if (isNull()) {
 		return h.null();
 	}
-	h.string({data.data(), (std::size_t)bindLen});
+	h.string({data.data(), static_cast<std::size_t>(bindLen)});
 }
 void
 ODBC::TimeStampColumn::apply(DB::HandleField & h) const
@@ -88,7 +78,10 @@ ODBC::TimeStampColumn::apply(DB::HandleField & h) const
 	if (isNull()) {
 		return h.null();
 	}
-	h.timestamp(*this);
+	h.timestamp(boost::posix_time::ptime(
+			boost::gregorian::date(static_cast<unsigned short int>(data.year),
+					static_cast<unsigned short int>(data.month), static_cast<unsigned short int>(data.day)),
+			boost::posix_time::time_duration(data.hour, data.minute, data.second, data.fraction)));
 }
 void
 ODBC::IntervalColumn::apply(DB::HandleField & h) const
@@ -96,5 +89,7 @@ ODBC::IntervalColumn::apply(DB::HandleField & h) const
 	if (isNull()) {
 		return h.null();
 	}
-	h.interval(*this);
+	auto dur = boost::posix_time::time_duration((24 * data.intval.day_second.day) + data.intval.day_second.hour,
+			data.intval.day_second.minute, data.intval.day_second.second, data.intval.day_second.fraction);
+	h.interval(data.interval_sign ? -dur : dur);
 }

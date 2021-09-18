@@ -21,7 +21,7 @@ ODBC::ModifyCommand::execute(bool anc)
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
 	if (rows > 0 || anc) {
-		return rows;
+		return static_cast<unsigned int>(rows);
 	}
 	throw DB::NoRowsAffected();
 }

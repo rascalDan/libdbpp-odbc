@@ -9,11 +9,12 @@ ODBC::Command::Command(const Connection & c, const std::string & s) : DB::Comman
 	if (!SQL_SUCCEEDED(rc)) {
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
-	rc = SQLSetStmtAttr(hStmt, SQL_ATTR_CURSOR_TYPE, (SQLPOINTER)SQL_CURSOR_DYNAMIC, 0);
+	rc = SQLSetStmtAttr(hStmt, SQL_ATTR_CURSOR_TYPE, reinterpret_cast<SQLPOINTER>(SQL_CURSOR_DYNAMIC), 0);
 	if (!SQL_SUCCEEDED(rc)) {
 		throw ConnectionError(rc, SQL_HANDLE_STMT, hStmt);
 	}
-	rc = SQLPrepare(hStmt, (SQLCHAR *)sql.c_str(), sql.length());
+	rc = SQLPrepare(hStmt, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(sql.data())),
+			static_cast<int>(sql.length()));
 	if (!SQL_SUCCEEDED(rc)) {
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
@@ -24,5 +25,5 @@ ODBC::Command::Command(const Connection & c, const std::string & s) : DB::Comman
 		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 		throw Error(rc, SQL_HANDLE_STMT, hStmt);
 	}
-	params.resize(pcount);
+	params.resize(static_cast<std::string::size_type>(pcount));
 }

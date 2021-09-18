@@ -7,14 +7,15 @@
 #include <sqlext.h>
 #include <stdexcept>
 
-NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory);
+NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory)
 
 ODBC::Connection::Connection(const DSN & d) :
 	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
-	RETCODE dberr = SQLConnect(conn, (SQLCHAR *)d.dsn.c_str(), SQL_NTS, (SQLCHAR *)d.username.c_str(), SQL_NTS,
-			(SQLCHAR *)d.password.c_str(), SQL_NTS);
+	RETCODE dberr = SQLConnect(conn, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(d.dsn.c_str())), SQL_NTS,
+			const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(d.username.c_str())), SQL_NTS,
+			const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(d.password.c_str())), SQL_NTS);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
@@ -29,7 +30,7 @@ ODBC::Connection::connectPre()
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
-	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void *)SQL_OV_ODBC3, 0);
+	dberr = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, reinterpret_cast<SQLPOINTER *>(SQL_OV_ODBC3), 0);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
@@ -39,7 +40,7 @@ ODBC::Connection::connectPre()
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
 
-	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, (SQLPOINTER *)5, 0);
+	dberr = SQLSetConnectAttr(conn, SQL_LOGIN_TIMEOUT, reinterpret_cast<SQLPOINTER *>(5), 0);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_ENV, env);
 	}
@@ -59,7 +60,7 @@ ODBC::Connection::connectPost()
 	}
 	// Apply known DB specific tweaks
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
-	if (strcasestr((const char *)info.data(), "myodbc")) {
+	if (strcasestr(reinterpret_cast<const char *>(info.data()), "myodbc")) {
 		thinkDelStyle = DB::BulkDeleteUsingUsingAlias;
 		thinkUpdStyle = DB::BulkUpdateUsingJoin;
 	}
@@ -69,8 +70,8 @@ ODBC::Connection::Connection(const std::string & s) :
 	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
 {
 	connectPre();
-	RETCODE dberr = SQLDriverConnect(
-			conn, nullptr, (SQLCHAR *)s.c_str(), s.length(), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
+	RETCODE dberr = SQLDriverConnect(conn, nullptr, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(s.c_str())),
+			static_cast<SQLSMALLINT>(s.length()), nullptr, 0, nullptr, SQL_DRIVER_NOPROMPT);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ConnectionError(dberr, SQL_HANDLE_DBC, conn);
 	}
@@ -153,11 +154,12 @@ ODBC::Connection::getAttrStr(SQLINTEGER attr) const
 	std::string rtn;
 	rtn.resize(BUFSIZ);
 	SQLINTEGER size = 0;
-	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, (unsigned char *)rtn.c_str(), BUFSIZ, &size);
+	SQLRETURN dberr = SQLGetConnectAttr(
+			conn, attr, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(rtn.c_str())), BUFSIZ, &size);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn);
 	}
-	rtn.resize(size);
+	rtn.resize(static_cast<std::string::size_type>(size));
 	return rtn;
 }
 
@@ -165,7 +167,7 @@ SQLINTEGER
 ODBC::Connection::getAttrInt(SQLINTEGER attr) const
 {
 	SQLINTEGER result;
-	SQLINTEGER dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), nullptr);
+	SQLRETURN dberr = SQLGetConnectAttr(conn, attr, &result, sizeof(result), nullptr);
 	if (!SQL_SUCCEEDED(dberr)) {
 		throw ODBC::Error(dberr, SQL_HANDLE_DBC, conn);
 	}

@@ -3,7 +3,14 @@
 
 #include "odbc-param_fwd.h"
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#ifndef __clang__
+#	pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
 #include <glibmm/ustring.h>
+#pragma GCC diagnostic pop
 #include <malloc.h>
 #include <sqlext.h>
 
@@ -13,7 +20,7 @@ namespace ODBC {
 		BooleanParam() : Param() { }
 		BooleanParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = BooleanParam::size();
+			bindLen = static_cast<SQLLEN>(BooleanParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
@@ -30,7 +37,7 @@ namespace ODBC {
 		{
 			return sizeof(SQLINTEGER);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 0;
@@ -55,24 +62,24 @@ namespace ODBC {
 		SignedIntegerParam() : Param() { }
 		SignedIntegerParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = SignedIntegerParam::size();
+			bindLen = static_cast<SQLLEN>(SignedIntegerParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
 		{
-			return SQL_C_LONG;
+			return SQL_C_SBIGINT;
 		}
 		virtual SQLSMALLINT
 		stype() const override
 		{
-			return SQL_C_LONG;
+			return SQL_C_SBIGINT;
 		}
 		virtual SQLULEN
 		size() const override
 		{
-			return sizeof(SQLINTEGER);
+			return sizeof(data);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 0;
@@ -83,38 +90,38 @@ namespace ODBC {
 			return &data;
 		}
 		SignedIntegerParam &
-		operator=(const SQLINTEGER & d)
+		operator=(const SQLBIGINT & d)
 		{
 			data = d;
 			return *this;
 		}
 
 	protected:
-		SQLINTEGER data;
+		SQLBIGINT data;
 	};
 	class UnsignedIntegerParam : public Param {
 	public:
 		UnsignedIntegerParam() : Param() { }
 		UnsignedIntegerParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = UnsignedIntegerParam::size();
+			bindLen = static_cast<SQLLEN>(UnsignedIntegerParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
 		{
-			return SQL_C_ULONG;
+			return SQL_C_UBIGINT;
 		}
 		virtual SQLSMALLINT
 		stype() const override
 		{
-			return SQL_C_ULONG;
+			return SQL_C_UBIGINT;
 		}
 		virtual SQLULEN
 		size() const override
 		{
-			return sizeof(SQLUINTEGER);
+			return sizeof(data);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 0;
@@ -125,21 +132,21 @@ namespace ODBC {
 			return &data;
 		}
 		UnsignedIntegerParam &
-		operator=(const SQLUINTEGER & d)
+		operator=(const SQLUBIGINT & d)
 		{
 			data = d;
 			return *this;
 		}
 
 	protected:
-		SQLUINTEGER data;
+		SQLUBIGINT data;
 	};
 	class FloatingPointParam : public Param {
 	public:
 		FloatingPointParam() : Param() { }
 		FloatingPointParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = FloatingPointParam::size();
+			bindLen = static_cast<SQLLEN>(FloatingPointParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
@@ -156,7 +163,7 @@ namespace ODBC {
 		{
 			return sizeof(SQLDOUBLE);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 10;
@@ -167,10 +174,15 @@ namespace ODBC {
 			return &data;
 		}
 		FloatingPointParam &
-		operator=(const SQLDOUBLE & d)
+		operator=(const double & d)
 		{
 			data = d;
 			return *this;
+		}
+		FloatingPointParam &
+		operator=(const float & f)
+		{
+			return operator=(static_cast<double>(f));
 		}
 
 	protected:
@@ -181,7 +193,7 @@ namespace ODBC {
 		StdStringParam() : Param() { }
 		StdStringParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = StdStringParam::size();
+			bindLen = static_cast<SQLLEN>(StdStringParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
@@ -198,7 +210,7 @@ namespace ODBC {
 		{
 			return data.length();
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 0;
@@ -219,7 +231,7 @@ namespace ODBC {
 		IntervalParam() : Param() { }
 		IntervalParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = IntervalParam::size();
+			bindLen = static_cast<SQLLEN>(IntervalParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
@@ -236,7 +248,7 @@ namespace ODBC {
 		{
 			return sizeof(SQL_INTERVAL_STRUCT);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return boost::posix_time::time_res_traits::num_fractional_digits();
@@ -256,7 +268,7 @@ namespace ODBC {
 		TimeStampParam() : Param() { }
 		TimeStampParam(Command * c, unsigned int i) : Param(c, i)
 		{
-			bindLen = TimeStampParam::size();
+			bindLen = static_cast<SQLLEN>(TimeStampParam::size());
 		}
 		virtual SQLSMALLINT
 		ctype() const override
@@ -273,7 +285,7 @@ namespace ODBC {
 		{
 			return sizeof(SQL_TIMESTAMP_STRUCT);
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return boost::posix_time::time_res_traits::num_fractional_digits();
@@ -310,7 +322,7 @@ namespace ODBC {
 		{
 			return 0;
 		}
-		virtual SQLINTEGER
+		virtual SQLSMALLINT
 		dp() const override
 		{
 			return 0;
