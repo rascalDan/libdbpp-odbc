@@ -3,10 +3,9 @@
 #include "odbc-error.h"
 #include "odbc-param_fwd.h"
 #include "odbc-selectcommand.h"
-#include <boost/date_time/gregorian/greg_date.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/time_duration.hpp>
+#include <boost/date_time/gregorian_calendar.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/time.hpp>
 #include <cstdio>
 
 namespace Glib {

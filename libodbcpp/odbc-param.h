@@ -2,7 +2,6 @@
 #define ODBC_PARAM_H
 
 #include "odbc-param_fwd.h"
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -11,8 +10,7 @@
 #endif
 #include <glibmm/ustring.h>
 #pragma GCC diagnostic pop
-#include <boost/date_time/posix_time/posix_time_config.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <sql.h>
 #include <sqlext.h>
 #include <string>

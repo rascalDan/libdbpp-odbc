@@ -2,8 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "mockDatabase.h"
-#include <boost/date_time/posix_time/conversion.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <connection.h>
 #include <cstdint>
 #include <definedDirs.h>

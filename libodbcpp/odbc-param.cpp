@@ -6,7 +6,6 @@
 #include <boost/date_time/date.hpp>
 #include <boost/date_time/gregorian_calendar.hpp>
 #include <boost/date_time/time.hpp>
-#include <boost/date_time/time_system_counted.hpp>
 #include <memory>
 #include <sqlext.h>
 
