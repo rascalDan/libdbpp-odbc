@@ -1,8 +1,18 @@
 #include "odbc-param.h"
+#include "command.h"
 #include "odbc-command.h"
 #include "odbc-error.h"
-#include <cstring>
+#include "odbc-param_fwd.h"
+#include <boost/date_time/date.hpp>
+#include <boost/date_time/gregorian_calendar.hpp>
+#include <boost/date_time/time.hpp>
+#include <boost/date_time/time_system_counted.hpp>
+#include <memory>
 #include <sqlext.h>
+
+namespace Glib {
+	class ustring;
+}
 
 ODBC::Param::Param() : paramCmd(nullptr), paramIdx(0), paramBound(false), dataLength(0) { }
 

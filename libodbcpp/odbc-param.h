@@ -11,10 +11,15 @@
 #endif
 #include <glibmm/ustring.h>
 #pragma GCC diagnostic pop
-#include <malloc.h>
+#include <boost/date_time/posix_time/posix_time_config.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <sql.h>
 #include <sqlext.h>
+#include <string>
+#include <string_view>
 
 namespace ODBC {
+	class Command;
 	class BooleanParam : public Param {
 	public:
 		BooleanParam() : Param() { }
@@ -330,7 +335,7 @@ namespace ODBC {
 		virtual const void *
 		dataAddress() const override
 		{
-			return NULL;
+			return nullptr;
 		}
 	};
 }

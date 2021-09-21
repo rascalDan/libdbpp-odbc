@@ -1,13 +1,14 @@
 #ifndef ODBC_CONNECTION_H
 #define ODBC_CONNECTION_H
 
-#include "odbc-dsn.h"
+#include "command_fwd.h"
 #include "odbc-error.h"
 #include <connection.h>
-#include <error.h>
 #include <sql.h>
+#include <string>
 
 namespace ODBC {
+	class DSN;
 	class ConnectionError : public virtual Error, public virtual DB::ConnectionError {
 	public:
 		ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle);

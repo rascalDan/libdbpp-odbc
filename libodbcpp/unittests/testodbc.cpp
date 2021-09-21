@@ -1,15 +1,22 @@
 #define BOOST_TEST_MODULE TestODBC
 #include <boost/test/unit_test.hpp>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <column.h>
+#include "mockDatabase.h"
+#include <boost/date_time/posix_time/conversion.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <connection.h>
+#include <cstdint>
 #include <definedDirs.h>
-#include <error.h>
+#include <filesystem>
+#include <memory>
 #include <modifycommand.h>
 #include <odbc-mock.h>
 #include <selectcommand.h>
 #include <selectcommandUtil.impl.h>
+#include <string>
+#include <string_view>
 #include <testCore.h>
+#include <type_traits>
 
 class StandardMockDatabase : public DB::PluginMock<ODBC::Mock> {
 public:

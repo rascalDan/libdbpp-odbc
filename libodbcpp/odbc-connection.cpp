@@ -1,11 +1,15 @@
 #include "odbc-connection.h"
-#include "error.h"
+#include "connection.h"
+#include "odbc-dsn.h"
+#include "odbc-error.h"
 #include "odbc-modifycommand.h"
 #include "odbc-selectcommand.h"
+#include <array>
 #include <cstdio>
 #include <cstring>
+#include <factory.h>
+#include <memory>
 #include <sqlext.h>
-#include <stdexcept>
 
 NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory)
 

@@ -1,9 +1,11 @@
 #include "odbc-mock.h"
+#include "connection_fwd.h"
+#include "mockDatabase.h"
 #include "odbc-connection.h"
 #include <compileTimeFormatter.h>
+#include <memory>
 
 namespace ODBC {
-
 	Mock::Mock(const std::string & b, const std::string & masterdb, const std::string & name,
 			const std::vector<std::filesystem::path> & ss) :
 		MockServerDatabase(b + ";" + masterdb, name, "odbc"),
@@ -30,5 +32,4 @@ namespace ODBC {
 	{
 		MockServerDatabase::DropDatabase();
 	}
-
 }

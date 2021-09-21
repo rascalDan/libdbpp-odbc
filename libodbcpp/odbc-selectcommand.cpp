@@ -1,11 +1,20 @@
 #include "odbc-selectcommand.h"
+#include "column.h"
+#include "command.h"
+#include "error.h"
 #include "odbc-column.h"
+#include "odbc-command.h"
 #include "odbc-error.h"
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index_container.hpp>
-#include <cstring>
+#include "selectcommand.h"
+#include <array>
+#include <glibmm/ustring.h>
 #include <numeric>
 #include <sqlext.h>
+#include <utility>
+
+namespace ODBC {
+	class Connection;
+}
 
 ODBC::SelectCommand::SelectCommand(const Connection & c, const std::string & s) :
 	DB::Command(s), ODBC::Command(c, s), DB::SelectCommand(s)

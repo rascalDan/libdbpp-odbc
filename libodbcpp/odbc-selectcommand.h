@@ -2,9 +2,14 @@
 #define ODBC_SELECTCOMMAND_H
 
 #include "odbc-command.h"
+#include <memory>
 #include <selectcommand.h>
+#include <set>
+#include <sql.h>
+#include <string>
 
 namespace ODBC {
+	class Connection;
 	class Column;
 	class SelectCommand : public Command, public DB::SelectCommand {
 	public:

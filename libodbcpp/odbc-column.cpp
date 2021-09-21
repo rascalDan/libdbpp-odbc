@@ -1,10 +1,17 @@
 #include "odbc-column.h"
-#include "odbc-command.h"
+#include "column.h"
 #include "odbc-error.h"
+#include "odbc-param_fwd.h"
 #include "odbc-selectcommand.h"
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/time_duration.hpp>
 #include <cstdio>
-#include <cstdlib>
-#include <sqlext.h>
+
+namespace Glib {
+	class ustring;
+}
 
 ODBC::Column::Column(SelectCommand * sc, const Glib::ustring & s, unsigned int i) : DB::Column(s, i), selectCmd(sc)
 {

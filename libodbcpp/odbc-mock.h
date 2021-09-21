@@ -2,8 +2,11 @@
 #define MOCKODBCDATASOURCE_H
 
 #include <c++11Helpers.h>
+#include <connection_fwd.h>
 #include <filesystem>
 #include <mockDatabase.h>
+#include <string>
+#include <vector>
 #include <visibility.h>
 
 namespace ODBC {

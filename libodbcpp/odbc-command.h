@@ -1,13 +1,23 @@
 #ifndef ODBC_COMMAND_H
 #define ODBC_COMMAND_H
 
-#include "odbc-connection.h"
-#include "odbc-param_fwd.h"
+#include "odbc-param_fwd.h" // IWYU pragma: keep
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
 #include <command.h>
 #include <glibmm/ustring.h>
+#include <memory>
+#include <sql.h>
+#include <string>
+#include <string_view>
 #include <vector>
 
+namespace boost::posix_time {
+	class time_duration;
+}
+
 namespace ODBC {
+	class Connection;
 	using ParamPtr = std::unique_ptr<Param>;
 	class Command : public virtual DB::Command {
 		using Params = std::vector<ParamPtr>;

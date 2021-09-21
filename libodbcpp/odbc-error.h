@@ -1,10 +1,10 @@
 #ifndef ODBC_ERROR_H
 #define ODBC_ERROR_H
 
-#include <error.h>
+#include <error.h> // IWYU pragma: keep
 #include <exception.h>
 #include <sql.h>
-#include <stdlib.h>
+#include <string>
 
 namespace ODBC {
 	class Error : public AdHoc::Exception<DB::Error> {

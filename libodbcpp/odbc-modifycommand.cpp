@@ -1,5 +1,9 @@
 #include "odbc-modifycommand.h"
+#include "command.h"
+#include "modifycommand.h"
+#include "odbc-command.h"
 #include "odbc-error.h"
+#include <sql.h>
 
 ODBC::ModifyCommand::ModifyCommand(const ODBC::Connection & c, const std::string & sql) :
 	DB::Command(sql), ODBC::Command(c, sql), DB::ModifyCommand(sql)

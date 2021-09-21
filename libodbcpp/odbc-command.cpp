@@ -1,6 +1,7 @@
 #include "odbc-command.h"
+#include "odbc-connection.h"
 #include "odbc-error.h"
-#include "odbc-param.h"
+#include <command.h>
 #include <sqlext.h>
 
 ODBC::Command::Command(const Connection & c, const std::string & s) : DB::Command(s), hStmt(nullptr), connection(c)

@@ -1,6 +1,8 @@
 #include "odbc-error.h"
+#include "error.h"
 #include <array>
 #include <compileTimeFormatter.h>
+#include <cstddef>
 
 namespace AdHoc {
 	StreamWriterT('5') {

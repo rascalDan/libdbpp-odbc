@@ -3,10 +3,13 @@
 
 #include "odbc-bind.h"
 #include "odbc-param.h"
+#include "odbc-param_fwd.h"
 #include <algorithm>
 #include <column.h>
 #include <glibmm/ustring.h>
-#include <typeinfo>
+#include <sql.h>
+#include <sqlext.h>
+#include <vector>
 
 namespace ODBC {
 	class SelectCommand;
