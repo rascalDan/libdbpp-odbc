@@ -188,6 +188,7 @@ ODBC::Connection::ping() const
 }
 
 ODBC::ConnectionError::ConnectionError(RETCODE err, SQLSMALLINT handletype, SQLHANDLE handle) :
+	// NOLINTNEXTLINE(bugprone-throw-keyword-missing)
 	ODBC::Error(err, handletype, handle), DB::ConnectionError()
 {
 }
