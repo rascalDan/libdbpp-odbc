@@ -6,6 +6,7 @@
 #include "odbc-command.h"
 #include "odbc-error.h"
 #include "selectcommand.h"
+#include <algorithm>
 #include <array>
 #include <glibmm/ustring.h>
 #include <numeric>

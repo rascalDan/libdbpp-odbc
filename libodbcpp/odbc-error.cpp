@@ -3,6 +3,7 @@
 #include <array>
 #include <compileTimeFormatter.h>
 #include <cstddef>
+// IWYU pragma: no_include <boost/test/unit_test.hpp>
 
 namespace AdHoc {
 	StreamWriterT('5') {
