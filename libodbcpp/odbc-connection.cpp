@@ -14,7 +14,8 @@
 NAMEDFACTORY("odbc", ODBC::Connection, DB::ConnectionFactory)
 
 ODBC::Connection::Connection(const DSN & d) :
-	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
+	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteStyle::UsingUsing),
+	thinkUpdStyle(DB::BulkUpdateStyle::UsingFromSrc)
 {
 	connectPre();
 	RETCODE dberr = SQLConnect(conn, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(d.dsn.c_str())), SQL_NTS,
@@ -65,13 +66,14 @@ ODBC::Connection::connectPost()
 	// Apply known DB specific tweaks
 	// NOLINTNEXTLINE(hicpp-no-array-decay)
 	if (strcasestr(reinterpret_cast<const char *>(info.data()), "myodbc")) {
-		thinkDelStyle = DB::BulkDeleteUsingUsingAlias;
-		thinkUpdStyle = DB::BulkUpdateUsingJoin;
+		thinkDelStyle = DB::BulkDeleteStyle::UsingUsingAlias;
+		thinkUpdStyle = DB::BulkUpdateStyle::UsingJoin;
 	}
 }
 
 ODBC::Connection::Connection(const std::string & s) :
-	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteUsingUsing), thinkUpdStyle(DB::BulkUpdateUsingFromSrc)
+	env(nullptr), conn(nullptr), thinkDelStyle(DB::BulkDeleteStyle::UsingUsing),
+	thinkUpdStyle(DB::BulkUpdateStyle::UsingFromSrc)
 {
 	connectPre();
 	RETCODE dberr = SQLDriverConnect(conn, nullptr, const_cast<SQLCHAR *>(reinterpret_cast<const SQLCHAR *>(s.c_str())),
