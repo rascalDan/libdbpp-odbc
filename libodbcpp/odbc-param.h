@@ -223,7 +223,7 @@ namespace ODBC {
 		{
 			return data.data();
 		}
-		StdStringParam & operator=(const std::string_view & d);
+		StdStringParam & operator=(const std::string_view d);
 		StdStringParam & operator=(const Glib::ustring & d);
 
 	protected:
@@ -261,7 +261,7 @@ namespace ODBC {
 		{
 			return &data;
 		}
-		IntervalParam & operator=(const boost::posix_time::time_duration & d);
+		IntervalParam & operator=(const boost::posix_time::time_duration d);
 
 	protected:
 		SQL_INTERVAL_STRUCT data;
@@ -298,7 +298,7 @@ namespace ODBC {
 		{
 			return &data;
 		}
-		TimeStampParam & operator=(const boost::posix_time::ptime & d);
+		TimeStampParam & operator=(const boost::posix_time::ptime d);
 
 	protected:
 		SQL_TIMESTAMP_STRUCT data;

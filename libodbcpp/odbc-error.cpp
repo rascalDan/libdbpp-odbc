@@ -3,17 +3,18 @@
 #include <array>
 #include <compileTimeFormatter.h>
 #include <cstddef>
+#include <utility>
 // IWYU pragma: no_include <boost/test/unit_test.hpp>
 
 namespace AdHoc {
 	StreamWriterT('5') {
 		template<std::size_t l, typename... Pn>
 		static void
-		write(stream & s, const std::array<SQLCHAR, l> & sqlstatus, const Pn &... pn)
+		write(stream & s, const std::array<SQLCHAR, l> & sqlstatus, Pn &&... pn)
 		{
 			static_assert(l > 5);
 			s.write(reinterpret_cast<const char * const>(sqlstatus.data()), 5);
-			StreamWriter::next(s, pn...);
+			StreamWriter::next(s, std::forward<Pn>(pn)...);
 		}
 	};
 }

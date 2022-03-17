@@ -68,10 +68,10 @@ SIMPLEBINDER(double, FloatingPointParam, F)
 SIMPLEBINDER(float, FloatingPointParam, F)
 
 SIMPLEBINDER(const Glib::ustring &, StdStringParam, S)
-SIMPLEBINDER(const std::string_view &, StdStringParam, S)
+SIMPLEBINDER(const std::string_view, StdStringParam, S)
 
-SIMPLEBINDER(const boost::posix_time::ptime &, TimeStampParam, T)
-SIMPLEBINDER(const boost::posix_time::time_duration &, IntervalParam, T)
+SIMPLEBINDER(const boost::posix_time::ptime, TimeStampParam, T)
+SIMPLEBINDER(const boost::posix_time::time_duration, IntervalParam, T)
 
 void
 ODBC::Command::bindNull(unsigned int i)
@@ -94,7 +94,7 @@ ODBC::StdStringParam::operator=(Glib::ustring const & d)
 }
 
 ODBC::StdStringParam &
-ODBC::StdStringParam::operator=(std::string_view const & d)
+ODBC::StdStringParam::operator=(const std::string_view d)
 {
 	const char * addr = data.data();
 	data = d;
@@ -108,7 +108,7 @@ ODBC::StdStringParam::operator=(std::string_view const & d)
 }
 
 ODBC::TimeStampParam &
-ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
+ODBC::TimeStampParam::operator=(const boost::posix_time::ptime d)
 {
 	data.year = static_cast<SQLSMALLINT>(d.date().year());
 	data.month = d.date().month();
@@ -121,7 +121,7 @@ ODBC::TimeStampParam::operator=(const boost::posix_time::ptime & d)
 }
 
 ODBC::IntervalParam &
-ODBC::IntervalParam::operator=(const boost::posix_time::time_duration & d)
+ODBC::IntervalParam::operator=(const boost::posix_time::time_duration d)
 {
 	data.interval_type = SQL_IS_DAY_TO_SECOND;
 	data.interval_sign = d.is_negative();
