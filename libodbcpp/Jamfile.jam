@@ -9,8 +9,7 @@ lib boost_system ;
 pkg-config.import glibmm : : <name>glibmm-2.68 ;
 pkg-config.import odbc : : <name>odbc ;
 
-project
-  : requirements
+project libdbpp-odbc : requirements
 			<cxxstd>20
 			<visibility>hidden
       <linkflags>"-Wl,-z,defs,--warn-once,--gc-sections"
