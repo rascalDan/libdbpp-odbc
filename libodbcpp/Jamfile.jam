@@ -6,7 +6,7 @@ lib dbppcore : : : : <include>/usr/include/dbpp ;
 lib boost_date_time ;
 lib boost_system ;
 
-pkg-config.import glibmm : : <name>glibmm-2.4 ;
+pkg-config.import glibmm : : <name>glibmm-2.68 ;
 pkg-config.import odbc : : <name>odbc ;
 
 project
